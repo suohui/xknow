@@ -36,6 +36,7 @@ public:
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 
 		MESSAGE_HANDLER(WM_NCHITTEST, OnNcHitTest)
+		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
@@ -70,8 +71,17 @@ public:
 		SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & (~WS_BORDER) & WS_POPUP);//无边框窗体
 		SetWindowLong(GWL_EXSTYLE, GetWindowLong(GWL_EXSTYLE) | WS_EX_APPWINDOW);    //显示在任务栏
 
+		memset(szFileName, 0, MAX_PATH);
+		memset(szBkgFileName, 0, MAX_PATH);
+		GetModuleFileName(NULL, szFileName, MAX_PATH);
+
+		PathRemoveFileSpec(szFileName);
+		PathCombine(szBkgFileName, szFileName, _T("..\\img\\bkg.png"));
+
 		return TRUE;
 	}
+	TCHAR szFileName[MAX_PATH];
+	TCHAR szBkgFileName[MAX_PATH];
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
@@ -87,6 +97,30 @@ public:
 	LRESULT OnNcHitTest(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 	{
 		return HTCAPTION;
+	}
+
+	void DoPaint(Graphics &g)
+	{
+		RECT rcClient;
+		GetClientRect(&rcClient);
+		Gdiplus::Rect rc(0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
+		g.DrawImage(Image::FromFile(szBkgFileName), rc);
+	}
+
+	LRESULT OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
+	{
+		if (wParam != NULL)
+		{
+			Graphics g((HDC)wParam);
+			DoPaint(g);
+		}
+		else
+		{
+			CPaintDC dc(m_hWnd);
+			Graphics g(dc.m_hDC);
+			DoPaint(g);
+		}
+		return 0;
 	}
 
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
