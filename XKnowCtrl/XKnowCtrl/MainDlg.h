@@ -49,6 +49,7 @@ public:
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
+		MoveWindow(0, 0, 681, 451);
 		// center the dialog on the screen
 		CenterWindow();
 
