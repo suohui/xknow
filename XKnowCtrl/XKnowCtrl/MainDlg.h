@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-
+#include "XKnowPng.h"
 //1、无边框窗体、可拖动
 //2、画LOGO、标题、背景
 //3、画窗体阴影
@@ -36,7 +36,9 @@ public:
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 
 		MESSAGE_HANDLER(WM_NCHITTEST, OnNcHitTest)
-		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+		//MESSAGE_HANDLER(WM_PAINT, OnPaint)
+
+		//MESSAGE_HANDLER(WM_SIZE, OnSize)
 
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
@@ -68,7 +70,7 @@ public:
 
 		UIAddChildWindowContainer(m_hWnd);
 
-		SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & (~WS_BORDER) & WS_POPUP);//无边框窗体
+		//SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & (~WS_BORDER) & WS_POPUP);//无边框窗体
 		SetWindowLong(GWL_EXSTYLE, GetWindowLong(GWL_EXSTYLE) | WS_EX_APPWINDOW);    //显示在任务栏
 
 		memset(szFileName, 0, MAX_PATH);
@@ -77,6 +79,12 @@ public:
 
 		PathRemoveFileSpec(szFileName);
 		PathCombine(szBkgFileName, szFileName, _T("..\\img\\bkg.png"));
+
+		XKnowPngInfo xi;
+		xi.ReadPng(L"D:\\1.png");
+		
+
+		//PngLoadImage(szBkgFileName, &pbImage, &cxImgSize, &cyImgSize, &cImgChannels, &bkgColor);
 
 		return TRUE;
 	}
@@ -97,6 +105,28 @@ public:
 	LRESULT OnNcHitTest(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 	{
 		return HTCAPTION;
+	}
+
+	BYTE              *pbImage = NULL;
+	int                cxWinSize, cyWinSize;
+	unsigned int       cxImgSize, cyImgSize;
+	int                cImgChannels;
+	png_color          bkgColor = { 127, 127, 127 };
+	
+	LRESULT OnSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
+	{
+		int cxWinSize = LOWORD(lParam);
+		int cyWinSize = HIWORD(lParam);
+
+		/* invalidate the client area for later update */
+		InvalidateRect(NULL, TRUE);
+
+		/* display the PNG into the DIBitmap */
+		BYTE              *pDib = NULL;
+		BYTE              *pDiData = NULL;
+		DisplayImage(m_hWnd, &pDib, &pDiData, cxWinSize, cyWinSize,
+			pbImage, cxImgSize, cyImgSize, cImgChannels, TRUE);
+		return 0;
 	}
 
 	void DoPaint(Graphics &g)
