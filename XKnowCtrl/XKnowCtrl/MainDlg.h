@@ -105,16 +105,21 @@ public:
 
 	LRESULT OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 	{
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(&ps);
-		HDC hMemDC = CreateCompatibleDC(hdc);
-		HGDIOBJ hOld = SelectObject(hMemDC, hBmp);
-		RECT rcClient;
-		GetClientRect(&rcClient);
-		BitBlt(hdc, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hMemDC, 0, 0, SRCCOPY);
-		SelectObject(hMemDC, hOld);
-		DeleteDC(hMemDC);
-		EndPaint(&ps);
+		//PAINTSTRUCT ps;
+		//HDC hdc = BeginPaint(&ps);
+		//HDC hMemDC = CreateCompatibleDC(hdc);
+		//HGDIOBJ hOld = SelectObject(hMemDC, hBmp);
+		//RECT rcClient;
+		//GetClientRect(&rcClient);
+		//BitBlt(hdc, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hMemDC, 0, 0, SRCCOPY);
+		//SelectObject(hMemDC, hOld);
+		//DeleteDC(hMemDC);
+		//EndPaint(&ps);
+
+		CPaintDC dc;
+		HDC hMemDC = dc.CreateCompatibleDC();
+
+
 
 		return 0;
 	}
