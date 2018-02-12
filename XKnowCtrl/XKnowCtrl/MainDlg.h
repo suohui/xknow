@@ -3,14 +3,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "XKnowPng.h"
 //1、无边框窗体、可拖动
 //2、画LOGO、标题、背景
 //3、画窗体阴影
 //4、画按扭
 //5、画动画
 //6、画Label
-
 class CMainDlg : public CDialogImpl<CMainDlg>, public CUpdateUI<CMainDlg>,
 		public CMessageFilter, public CIdleHandler
 {
@@ -41,6 +39,8 @@ public:
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
+
+		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 
 // Handler prototypes (uncomment arguments if needed):
@@ -78,12 +78,19 @@ public:
 		PathCombine(szBkgFileName, szFileName, _T("..\\img\\bkg.png"));
 		m_hBkgndBmp = CreateHBitmapFromFile(szBkgFileName);
 
+		m_AboutBtn.SubclassWindow(GetDlgItem(IDOK).m_hWnd);	//SubclassWindow只对CreateWindow时有效
+		m_AboutBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
+		m_AboutBtn.SetHBmpBkgnd(m_hBkgndBmp);
+		m_AboutBtn.MoveWindow(0, 0, 64, 64);
+
 		return TRUE;
 	}
 	TCHAR szFileName[MAX_PATH];
 	TCHAR szBkgFileName[MAX_PATH];
 
 	HBITMAP m_hBkgndBmp;
+
+	CXKnowButton m_AboutBtn;
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
@@ -127,7 +134,7 @@ public:
 	LRESULT OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
 		// TODO: Add validation code 
-		CloseDialog(wID);
+		//CloseDialog(wID);
 		return 0;
 	}
 
