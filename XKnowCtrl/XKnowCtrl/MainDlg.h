@@ -67,25 +67,23 @@ public:
 		pLoop->AddIdleHandler(this);
 
 		UIAddChildWindowContainer(m_hWnd);
-
+		//修改窗体属性
 		SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & (~WS_BORDER) & WS_POPUP);//无边框窗体
 		SetWindowLong(GWL_EXSTYLE, GetWindowLong(GWL_EXSTYLE) | WS_EX_APPWINDOW);    //显示在任务栏
-
+		//获取背景图片
 		memset(szFileName, 0, MAX_PATH);
 		memset(szBkgFileName, 0, MAX_PATH);
 		GetModuleFileName(NULL, szFileName, MAX_PATH);
-
 		PathRemoveFileSpec(szFileName);
 		PathCombine(szBkgFileName, szFileName, _T("..\\img\\bkg.png"));
-
-		hBmp = LoadFile(szBkgFileName);
+		m_hBkgndBmp = CreateHBitmapFromFile(szBkgFileName);
 
 		return TRUE;
 	}
 	TCHAR szFileName[MAX_PATH];
 	TCHAR szBkgFileName[MAX_PATH];
 
-	HBITMAP hBmp;
+	HBITMAP m_hBkgndBmp;
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
@@ -94,6 +92,8 @@ public:
 		ATLASSERT(pLoop != NULL);
 		pLoop->RemoveMessageFilter(this);
 		pLoop->RemoveIdleHandler(this);
+
+		DeleteObject(m_hBkgndBmp);
 
 		return 0;
 	}
@@ -105,22 +105,15 @@ public:
 
 	LRESULT OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 	{
-		//PAINTSTRUCT ps;
-		//HDC hdc = BeginPaint(&ps);
-		//HDC hMemDC = CreateCompatibleDC(hdc);
-		//HGDIOBJ hOld = SelectObject(hMemDC, hBmp);
-		//RECT rcClient;
-		//GetClientRect(&rcClient);
-		//BitBlt(hdc, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hMemDC, 0, 0, SRCCOPY);
-		//SelectObject(hMemDC, hOld);
-		//DeleteDC(hMemDC);
-		//EndPaint(&ps);
+		CPaintDC dc(m_hWnd);
+		HDC hMemDC = CreateCompatibleDC(dc.m_hDC);
+		HGDIOBJ hOld = SelectObject(hMemDC, m_hBkgndBmp);
+		RECT rcClient;
+		GetClientRect(&rcClient);
+		BitBlt(dc.m_hDC, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hMemDC, 0, 0, SRCCOPY);
 
-		CPaintDC dc;
-		HDC hMemDC = dc.CreateCompatibleDC();
-
-
-
+		SelectObject(hMemDC, hOld);
+		DeleteDC(hMemDC);
 		return 0;
 	}
 

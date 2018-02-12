@@ -9,10 +9,18 @@ extern "C"
 
 };
 
-HBITMAP LoadFile(LPCTSTR lpszFileName)
+HBITMAP CreateHBitmapFromFile(LPCTSTR lpszFileName)
 {
 	HANDLE hFile = ::CreateFile(lpszFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return NULL;
+	}
 	DWORD dwSize = ::GetFileSize(hFile, NULL);
+	if (dwSize == 0)
+	{
+		return NULL;
+	}
 	LPBYTE pData = new BYTE[dwSize];
 	DWORD dwRead = 0;
 	::ReadFile(hFile, pData, dwSize, &dwRead, NULL);
@@ -27,6 +35,10 @@ HBITMAP LoadFile(LPCTSTR lpszFileName)
 	LPBYTE pImage = stbi_load_from_memory(pData, dwSize, &x, &y, &n, 4);
 	delete[] pData;
 	pData = NULL;
+	if (pImage == NULL)
+	{
+		return NULL;
+	}
 
 	BITMAPINFO bmi;
 	::ZeroMemory(&bmi, sizeof(BITMAPINFO));
@@ -40,6 +52,11 @@ HBITMAP LoadFile(LPCTSTR lpszFileName)
 
 	LPBYTE pDest = NULL;
 	HBITMAP hBitmap = ::CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void **)&pDest, NULL, 0);
+	if (hBitmap == NULL)
+	{
+		stbi_image_free(pImage);
+		return NULL;
+	}
 
 	for (int i = 0; i < x * y; i++)
 	{
