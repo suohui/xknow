@@ -36,9 +36,7 @@ public:
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 
 		MESSAGE_HANDLER(WM_NCHITTEST, OnNcHitTest)
-		//MESSAGE_HANDLER(WM_PAINT, OnPaint)
-
-		//MESSAGE_HANDLER(WM_SIZE, OnSize)
+		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
@@ -70,7 +68,7 @@ public:
 
 		UIAddChildWindowContainer(m_hWnd);
 
-		//SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & (~WS_BORDER) & WS_POPUP);//无边框窗体
+		SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & (~WS_BORDER) & WS_POPUP);//无边框窗体
 		SetWindowLong(GWL_EXSTYLE, GetWindowLong(GWL_EXSTYLE) | WS_EX_APPWINDOW);    //显示在任务栏
 
 		memset(szFileName, 0, MAX_PATH);
@@ -80,16 +78,14 @@ public:
 		PathRemoveFileSpec(szFileName);
 		PathCombine(szBkgFileName, szFileName, _T("..\\img\\bkg.png"));
 
-		XKnowPngInfo xi;
-		xi.ReadPng(L"D:\\1.png");
-		
-
-		//PngLoadImage(szBkgFileName, &pbImage, &cxImgSize, &cyImgSize, &cImgChannels, &bkgColor);
+		hBmp = LoadFile(szBkgFileName);
 
 		return TRUE;
 	}
 	TCHAR szFileName[MAX_PATH];
 	TCHAR szBkgFileName[MAX_PATH];
+
+	HBITMAP hBmp;
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
@@ -107,49 +103,19 @@ public:
 		return HTCAPTION;
 	}
 
-	BYTE              *pbImage = NULL;
-	int                cxWinSize, cyWinSize;
-	unsigned int       cxImgSize, cyImgSize;
-	int                cImgChannels;
-	png_color          bkgColor = { 127, 127, 127 };
-	
-	LRESULT OnSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
-	{
-		int cxWinSize = LOWORD(lParam);
-		int cyWinSize = HIWORD(lParam);
-
-		/* invalidate the client area for later update */
-		InvalidateRect(NULL, TRUE);
-
-		/* display the PNG into the DIBitmap */
-		BYTE              *pDib = NULL;
-		BYTE              *pDiData = NULL;
-		DisplayImage(m_hWnd, &pDib, &pDiData, cxWinSize, cyWinSize,
-			pbImage, cxImgSize, cyImgSize, cImgChannels, TRUE);
-		return 0;
-	}
-
-	void DoPaint(Graphics &g)
-	{
-		RECT rcClient;
-		GetClientRect(&rcClient);
-		Gdiplus::Rect rc(0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
-		g.DrawImage(Image::FromFile(szBkgFileName), rc);
-	}
-
 	LRESULT OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 	{
-		if (wParam != NULL)
-		{
-			Graphics g((HDC)wParam);
-			DoPaint(g);
-		}
-		else
-		{
-			CPaintDC dc(m_hWnd);
-			Graphics g(dc.m_hDC);
-			DoPaint(g);
-		}
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(&ps);
+		HDC hMemDC = CreateCompatibleDC(hdc);
+		HGDIOBJ hOld = SelectObject(hMemDC, hBmp);
+		RECT rcClient;
+		GetClientRect(&rcClient);
+		BitBlt(hdc, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hMemDC, 0, 0, SRCCOPY);
+		SelectObject(hMemDC, hOld);
+		DeleteDC(hMemDC);
+		EndPaint(&ps);
+
 		return 0;
 	}
 

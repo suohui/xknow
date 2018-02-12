@@ -51,13 +51,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 
-	ULONG  gdiplusToken = 0;
-	GdiplusStartupInput gdiplusInput;
-	GdiplusStartup(&gdiplusToken, &gdiplusInput, NULL);
-
 	int nRet = Run(lpstrCmdLine, nCmdShow);
-
-	GdiplusShutdown(gdiplusToken);
 
 	_Module.Term();
 	::CoUninitialize();
