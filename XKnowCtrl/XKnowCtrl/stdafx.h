@@ -15,6 +15,7 @@
 #include <atlapp.h>
 #include <atlframe.h>
 #include <atlctrls.h>
+#include <atlmisc.h> 
 extern CAppModule _Module;
 
 #include <stb_image.h>

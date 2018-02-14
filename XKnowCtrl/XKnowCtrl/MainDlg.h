@@ -81,7 +81,10 @@ public:
 		m_AboutBtn.SubclassWindow(GetDlgItem(IDOK).m_hWnd);	//SubclassWindow只对CreateWindow时有效
 		m_AboutBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
 		m_AboutBtn.SetHBmpBkgnd(m_hBkgndBmp);
-		m_AboutBtn.MoveWindow(0, 0, 64, 64);
+		m_AboutBtn.SetImage(L"D:\\XKnow\\xknow\\xknow\\XKnowCtrl\\img\\50.png", L"D:\\XKnow\\xknow\\xknow\\XKnowCtrl\\img\\51.png");
+		//m_AboutBtn.SetImage(L"C:\\Users\\suo\\Desktop\\开心矿场\\开心矿场 切图\\1  主界面\\提币.png", PNGTYPE::FourInOne);
+		m_AboutBtn.MoveWindow(100, 100, 64, 64);
+		m_AboutBtn.SetHandCursor();
 
 		return TRUE;
 	}
