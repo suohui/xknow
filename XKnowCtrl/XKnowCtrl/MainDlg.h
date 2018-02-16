@@ -36,6 +36,8 @@ public:
 		MESSAGE_HANDLER(WM_NCHITTEST, OnNcHitTest)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 
+		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, OnCtlColorStatic)
+
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
@@ -71,29 +73,63 @@ public:
 		SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & (~WS_BORDER) & WS_POPUP);//无边框窗体
 		SetWindowLong(GWL_EXSTYLE, GetWindowLong(GWL_EXSTYLE) | WS_EX_APPWINDOW);    //显示在任务栏
 		//获取背景图片
-		memset(szFileName, 0, MAX_PATH);
+		memset(szImageDir, 0, MAX_PATH);
 		memset(szBkgFileName, 0, MAX_PATH);
-		GetModuleFileName(NULL, szFileName, MAX_PATH);
-		PathRemoveFileSpec(szFileName);
-		PathCombine(szBkgFileName, szFileName, _T("..\\img\\bkg.png"));
+		GetModuleFileName(NULL, szImageDir, MAX_PATH);
+		PathRemoveFileSpec(szImageDir);
+		PathCombine(szImageDir, szImageDir, _T("..\\img"));
+		PathCombine(szBkgFileName, szImageDir, _T("bkg.png"));
 		m_hBkgndBmp = CreateHBitmapFromFile(szBkgFileName);
 
-		m_AboutBtn.SubclassWindow(GetDlgItem(IDOK).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_AboutBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
-		m_AboutBtn.SetHBmpBkgnd(m_hBkgndBmp);
-		m_AboutBtn.SetImage(L"D:\\XKnow\\xknow\\xknow\\XKnowCtrl\\img\\50.png", L"D:\\XKnow\\xknow\\xknow\\XKnowCtrl\\img\\51.png");
-		//m_AboutBtn.SetImage(L"C:\\Users\\suo\\Desktop\\开心矿场\\开心矿场 切图\\1  主界面\\提币.png", PNGTYPE::FourInOne);
-		m_AboutBtn.MoveWindow(100, 100, 64, 64);
-		m_AboutBtn.SetHandCursor();
+		//设置LOGO
+		CStatic logoWnd = (CStatic)GetDlgItem(IDC_LOGO);
+		TCHAR szLogoFile[MAX_PATH] = { 0 };
+		PathCombine(szLogoFile, szImageDir, _T("logo.png"));
+		m_hLogoBmp = CreateHBitmapFromFile(szLogoFile);
+		logoWnd.ModifyStyle(0xF, SS_BITMAP | SS_CENTERIMAGE);//设置静态控件的样式，使其可以使用位图，并试位标显示使居中
+		logoWnd.SetBitmap(m_hLogoBmp);
+		logoWnd.MoveWindow(22, 12, 167, 32);
+
+
+		//设置按钮
+		m_MenuBtn.SubclassWindow(GetDlgItem(IDC_MENU).m_hWnd);	//SubclassWindow只对CreateWindow时有效
+		m_MenuBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
+		m_MenuBtn.SetHBmpBkgnd(m_hBkgndBmp);
+		TCHAR szMenuBtnFile[MAX_PATH] = { 0 };
+		PathCombine(szMenuBtnFile, szImageDir, _T("menu.png"));
+		m_MenuBtn.SetImage(szMenuBtnFile, PNGTYPE::ThreeInOne);
+		m_MenuBtn.MoveWindow(680 - 12 - 6 * 2 - 28 * 3, 14, 28, 28);
+		m_MenuBtn.SetHandCursor();
+
+		m_MinBtn.SubclassWindow(GetDlgItem(IDC_MIN).m_hWnd);	//SubclassWindow只对CreateWindow时有效
+		m_MinBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
+		m_MinBtn.SetHBmpBkgnd(m_hBkgndBmp);
+		TCHAR szMinBtnFile[MAX_PATH] = { 0 };
+		PathCombine(szMinBtnFile, szImageDir, _T("min.png"));
+		m_MinBtn.SetImage(szMinBtnFile, PNGTYPE::ThreeInOne);
+		m_MinBtn.MoveWindow(680 - 12 - 6 - 28 * 2, 14, 28, 28);
+		m_MinBtn.SetHandCursor();
+
+		m_CloseBtn.SubclassWindow(GetDlgItem(IDOK).m_hWnd);	//SubclassWindow只对CreateWindow时有效
+		m_CloseBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
+		m_CloseBtn.SetHBmpBkgnd(m_hBkgndBmp);
+		TCHAR szCloseBtnFile[MAX_PATH] = { 0 };
+		PathCombine(szCloseBtnFile, szImageDir, _T("close.png"));
+		m_CloseBtn.SetImage(szCloseBtnFile, PNGTYPE::ThreeInOne);
+		m_CloseBtn.MoveWindow(680 - 12 - 28, 14, 28, 28);
+		m_CloseBtn.SetHandCursor();
 
 		return TRUE;
 	}
-	TCHAR szFileName[MAX_PATH];
+	TCHAR szImageDir[MAX_PATH];
 	TCHAR szBkgFileName[MAX_PATH];
 
+	HBITMAP m_hLogoBmp;
 	HBITMAP m_hBkgndBmp;
 
-	CXKnowButton m_AboutBtn;
+	CXKnowButton m_MenuBtn;
+	CXKnowButton m_MinBtn;
+	CXKnowButton m_CloseBtn;
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
@@ -103,6 +139,7 @@ public:
 		pLoop->RemoveMessageFilter(this);
 		pLoop->RemoveIdleHandler(this);
 
+		DeleteObject(m_hLogoBmp);
 		DeleteObject(m_hBkgndBmp);
 
 		return 0;
@@ -125,6 +162,12 @@ public:
 		SelectObject(hMemDC, hOld);
 		DeleteDC(hMemDC);
 		return 0;
+	}
+	
+	LRESULT OnCtlColorStatic(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
+	{
+		SetBkMode((HDC)wParam, TRANSPARENT);
+		return (BOOL)((HBRUSH)GetStockObject(NULL_BRUSH));
 	}
 
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
