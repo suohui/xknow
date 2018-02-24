@@ -119,6 +119,17 @@ public:
 		m_CloseBtn.MoveWindow(680 - 12 - 28, 14, 28, 28);
 		m_CloseBtn.SetHandCursor();
 
+		m_RebootBtn.SubclassWindow(GetDlgItem(IDC_REBOOT).m_hWnd);	//SubclassWindow只对CreateWindow时有效
+		m_RebootBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
+		m_RebootBtn.SetHBmpBkgnd(m_hBkgndBmp);
+		TCHAR szRebootBtnFile[MAX_PATH] = { 0 };
+		PathCombine(szRebootBtnFile, szImageDir, _T("btn.png"));
+		m_RebootBtn.SetImage(szRebootBtnFile, PNGTYPE::FourInOne);
+		m_RebootBtn.MoveWindow(100, 200, 160, 32);
+		m_RebootBtn.SetHandCursor();
+
+		
+
 		return TRUE;
 	}
 	TCHAR szImageDir[MAX_PATH];
@@ -130,6 +141,8 @@ public:
 	CXKnowButton m_MenuBtn;
 	CXKnowButton m_MinBtn;
 	CXKnowButton m_CloseBtn;
+
+	CXKnowButton m_RebootBtn;
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
@@ -172,8 +185,24 @@ public:
 
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
-		CAboutDlg dlg;
-		dlg.DoModal();
+		CStatic lbl = (CStatic)GetDlgItem(IDC_LABELTEST);
+		
+		//lbl.SetWindowText(L"已加载");
+		
+
+		CFont ft;
+		//ft.CreatePointFont(12, L"宋体", lbl.GetDC(), true, true);
+		ft.CreateFont(12, 0, 0, 0, FW_NORMAL, TRUE, TRUE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"微软雅黑");
+		lbl.SetFont(ft.m_hFont);
+		::SetTextColor(lbl.GetDC(), RGB(255, 0, 255));
+		lbl.ShowWindow(SW_HIDE);
+		lbl.ShowWindow(SW_SHOW);
+
+		lbl.GetFont();
+
+		//CAboutDlg dlg;
+		//dlg.DoModal();
 		return 0;
 	}
 
