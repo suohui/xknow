@@ -53,7 +53,7 @@ public:
 	void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	{
 		HDC hdc = lpDrawItemStruct->hDC;
-		RECT rcItem = lpDrawItemStruct->rcItem;
+		CRect rcItem = lpDrawItemStruct->rcItem;
 		UINT nState = lpDrawItemStruct->itemState;
 
 		CRect rcRectTmp;
@@ -85,58 +85,50 @@ public:
 				rcRectTmp = m_rcNormal;
 			}
 		}
-
-		BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-
-		//画背景
-		HDC hMemDCBkg = CreateCompatibleDC(hdc);
-		HGDIOBJ hOldBmp = SelectObject(hMemDCBkg, m_hBmpBkgnd);
-		RECT rcWindow;
-		GetWindowRect(&rcWindow);
-		::MapWindowPoints(NULL, GetParent().m_hWnd, (LPPOINT)(LPRECT)&rcWindow, 2);	//获得其在父窗体上的坐标
-		BitBlt(hdc, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDCBkg, rcWindow.left, rcWindow.top, SRCCOPY);
-		SelectObject(hMemDCBkg, hOldBmp);
-		DeleteDC(hMemDCBkg);
-		//画前景
+		//双缓冲绘图
 		HDC hMemDC = CreateCompatibleDC(hdc);
-		if (NULL != hBmpTmp)
+		HBITMAP hbmp = CreateCompatibleBitmap(hdc, rcItem.Width(), rcItem.Height());
+		HGDIOBJ hbmpold = SelectObject(hMemDC, hbmp);
+		//画背景
 		{
-			hOldBmp = SelectObject(hMemDC, hBmpTmp);
-			//画文字
-			DrawText(hMemDC, L"重启电脑", lstrlen(L"重启电脑"), &rcRectTmp, DT_CENTER | DT_VCENTER);
-			AlphaBlend(hdc, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDC, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, bf);
+			HDC hMemDCBkg = CreateCompatibleDC(hdc);
+			HGDIOBJ hOldBmp = SelectObject(hMemDCBkg, m_hBmpBkgnd);
+			RECT rcWindow;
+			GetWindowRect(&rcWindow);
+			::MapWindowPoints(NULL, GetParent().m_hWnd, (LPPOINT)(LPRECT)&rcWindow, 2);	//获得其在父窗体上的坐标
+			BitBlt(hMemDC, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDCBkg, rcWindow.left, rcWindow.top, SRCCOPY);
+			SelectObject(hMemDCBkg, hOldBmp);
+			DeleteDC(hMemDCBkg);
 		}
-		else
+		//画前景
 		{
-			hOldBmp = SelectObject(hMemDC, m_hBmpAllInOne);
-			//画文字
-			CFont font;
-			font.CreateFont(
-				20,                        // nHeight
-				0,                         // nWidth
-				0,                         // nEscapement
-				0,                         // nOrientation
-				FW_NORMAL,                 // nWeight
-				FALSE,                     // bItalic
-				FALSE,                     // bUnderline
-				0,                         // cStrikeOut
-				ANSI_CHARSET,              // nCharSet
-				OUT_DEFAULT_PRECIS,        // nOutPrecision
-				CLIP_DEFAULT_PRECIS,       // nClipPrecision
-				DEFAULT_QUALITY,           // nQuality
-				DEFAULT_PITCH | FF_SWISS,  // nPitchAndFamily
-				_T("微软雅黑"));                 // lpszFacename
-			//ft.CreatePointFont(120, L"微软雅黑", hdc);
-			HGDIOBJ hold = SelectObject(hMemDC, font.m_hFont);
+			BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+			HDC hMemDCFrg = CreateCompatibleDC(hdc);
+			HGDIOBJ hOldBmp = NULL;
+			if (NULL != hBmpTmp)
+			{
+				hOldBmp = SelectObject(hMemDCFrg, hBmpTmp);
+				AlphaBlend(hMemDC, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDCFrg, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, bf);
+			}
+			else
+			{
+				hOldBmp = SelectObject(hMemDCFrg, m_hBmpAllInOne);
+				AlphaBlend(hMemDC, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDCFrg, rcRectTmp.left, rcRectTmp.top, rcRectTmp.Width(), rcRectTmp.Height(), bf);
+			}
+			SelectObject(hMemDCFrg, hOldBmp);
+			DeleteDC(hMemDCFrg);
+		}
+		//画文字
+		{
+			HGDIOBJ hold = SelectObject(hMemDC, m_hFont);
 			::SetBkMode(hMemDC, TRANSPARENT);
 			SetTextColor(hMemDC, RGB(122, 122, 122));
-			DrawText(hMemDC, L"立即重启", -1, &rcRectTmp, DT_CENTER | DT_VCENTER);
-
-			AlphaBlend(hdc, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDC, rcRectTmp.left, rcRectTmp.top, rcRectTmp.Width(), rcRectTmp.Height(), bf);
+			DrawText(hMemDC, L"立即重启", -1, &rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 			SelectObject(hMemDC, hold);
 		}
-
-		SelectObject(hMemDC, hOldBmp);
+		BitBlt(hdc, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDC, 0, 0, SRCCOPY);
+		SelectObject(hMemDC, hbmpold);
+		DeleteObject(hbmp);
 		DeleteDC(hMemDC);
 	}
 
@@ -152,6 +144,14 @@ public:
 		m_bTracking = FALSE;
 
 		m_bHandCursor = FALSE;
+
+		ZeroMemory(&m_lf, sizeof(m_lf));
+		::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(m_lf), &m_lf);
+		m_lf.lfCharSet = DEFAULT_CHARSET;
+		m_lf.lfHeight = -12;
+		m_lf.lfUnderline = TRUE;
+		lstrcpy(m_lf.lfFaceName, _T("微软雅黑"));
+		m_hFont = ::CreateFontIndirect(&m_lf);
 	}
 	~CXKnowButton()
 	{
@@ -250,4 +250,7 @@ private:
 	BOOL m_bTracking;
 
 	BOOL m_bHandCursor;
+
+	HFONT m_hFont;
+	LOGFONT m_lf;
 };

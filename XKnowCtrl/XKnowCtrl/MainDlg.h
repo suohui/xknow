@@ -128,8 +128,6 @@ public:
 		m_RebootBtn.MoveWindow(100, 200, 160, 32);
 		m_RebootBtn.SetHandCursor();
 
-		
-
 		return TRUE;
 	}
 	TCHAR szImageDir[MAX_PATH];
