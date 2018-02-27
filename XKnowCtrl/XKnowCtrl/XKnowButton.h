@@ -1,5 +1,7 @@
 #pragma once
 
+//说明：简单起见，按钮图片只能横着并排放一起，不再支持单独加载
+
 ///需要在父窗口的消息映射表中加入一条REFLECT_NOTIFICATIONS()宏，父窗口就能够将支持消息反射的控件所发出的消息反传回去
 ///添加CHAIN_MSG_MAP_ALT(COwnerDraw<CXKnowButton>, 1)，窗口默认的绘制消息WM_ERASEBKGND、WM_PRINT、WM_PRINTCLIENT就不会触发
 class CXKnowButton : public CWindowImpl<CXKnowButton, CButton>,
@@ -57,11 +59,8 @@ public:
 		UINT nState = lpDrawItemStruct->itemState;
 
 		CRect rcRectTmp;
-		HBITMAP hBmpTmp = NULL;
-
 		if (nState & ODS_DISABLED)
 		{
-			hBmpTmp = m_hBmpDisabled;
 			rcRectTmp = m_rcDisabled;
 		}
 		else
@@ -70,76 +69,32 @@ public:
 			{
 				if (nState & ODS_SELECTED)
 				{
-					hBmpTmp = m_hBmpPress;
 					rcRectTmp = m_rcPress;
 				}
 				else
 				{
-					hBmpTmp = m_hBmpHover;
 					rcRectTmp = m_rcHover;
 				}
 			}
 			else
 			{
-				hBmpTmp = m_hBmpNormal;
 				rcRectTmp = m_rcNormal;
 			}
 		}
 		//双缓冲绘图
-		HDC hMemDC = CreateCompatibleDC(hdc);
-		HBITMAP hbmp = CreateCompatibleBitmap(hdc, rcItem.Width(), rcItem.Height());
-		HGDIOBJ hbmpold = SelectObject(hMemDC, hbmp);
+		CMemoryDC memDC(hdc, rcItem);
 		//画背景
-		{
-			HDC hMemDCBkg = CreateCompatibleDC(hdc);
-			HGDIOBJ hOldBmp = SelectObject(hMemDCBkg, m_hBmpBkgnd);
-			RECT rcWindow;
-			GetWindowRect(&rcWindow);
-			::MapWindowPoints(NULL, GetParent().m_hWnd, (LPPOINT)(LPRECT)&rcWindow, 2);	//获得其在父窗体上的坐标
-			BitBlt(hMemDC, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDCBkg, rcWindow.left, rcWindow.top, SRCCOPY);
-			SelectObject(hMemDCBkg, hOldBmp);
-			DeleteDC(hMemDCBkg);
-		}
+		CXKnowRender::DrawBkgnd(m_hWnd, memDC, m_hBmpBkgnd, rcItem);
 		//画前景
-		{
-			BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-			HDC hMemDCFrg = CreateCompatibleDC(hdc);
-			HGDIOBJ hOldBmp = NULL;
-			if (NULL != hBmpTmp)
-			{
-				hOldBmp = SelectObject(hMemDCFrg, hBmpTmp);
-				AlphaBlend(hMemDC, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDCFrg, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, bf);
-			}
-			else
-			{
-				hOldBmp = SelectObject(hMemDCFrg, m_hBmpAllInOne);
-				AlphaBlend(hMemDC, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDCFrg, rcRectTmp.left, rcRectTmp.top, rcRectTmp.Width(), rcRectTmp.Height(), bf);
-			}
-			SelectObject(hMemDCFrg, hOldBmp);
-			DeleteDC(hMemDCFrg);
-		}
+		CXKnowRender::DrawImage(memDC, m_hBmpAllInOne, rcItem, rcRectTmp, m_bAlpha);
 		//画文字
-		{
-			HGDIOBJ hold = SelectObject(hMemDC, m_hFont);
-			::SetBkMode(hMemDC, TRANSPARENT);
-			SetTextColor(hMemDC, RGB(122, 122, 122));
-			DrawText(hMemDC, L"立即重启", -1, &rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-			SelectObject(hMemDC, hold);
-		}
-		BitBlt(hdc, 0, 0, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hMemDC, 0, 0, SRCCOPY);
-		SelectObject(hMemDC, hbmpold);
-		DeleteObject(hbmp);
-		DeleteDC(hMemDC);
+		CXKnowRender::DrawText(memDC, L"立即启动", rcItem, 0x6D5539, _T("default.font12"), DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	}
 
 	CXKnowButton()
 	{
-		m_hBmpNormal = NULL;
-		m_hBmpHover = NULL;
-		m_hBmpPress = NULL;
-		m_hBmpDisabled = NULL;
-
 		m_hBmpBkgnd = NULL;
+		m_bAlpha = FALSE;
 		m_bOver = FALSE;
 		m_bTracking = FALSE;
 
@@ -155,49 +110,16 @@ public:
 	}
 	~CXKnowButton()
 	{
-		DeleteObject(m_hBmpNormal);
-		m_hBmpNormal = NULL;
-		if (m_hBmpHover != NULL)
+		if (m_hBmpAllInOne != NULL)
 		{
-			DeleteObject(m_hBmpHover);
-			m_hBmpHover = NULL;
-		}
-		if (m_hBmpPress != NULL)
-		{
-			DeleteObject(m_hBmpPress);
-			m_hBmpPress = NULL;
-		}
-		if (m_hBmpDisabled != NULL)
-		{
-			DeleteObject(m_hBmpDisabled);
-			m_hBmpDisabled = NULL;
+			DeleteObject(m_hBmpAllInOne);
+			m_hBmpAllInOne = NULL;
 		}
 	}
 
 	void SetHBmpBkgnd(HBITMAP hBmp)
 	{
 		m_hBmpBkgnd = hBmp;
-	}
-
-	void SetImage(LPCTSTR lpszNormalFileName, LPCTSTR lpszHoverFileName = NULL, LPCTSTR lpszPressFileName = NULL, LPCTSTR lpszDisabledFileName = NULL)
-	{
-		m_hBmpNormal = CreateHBitmapFromFile(lpszNormalFileName);
-		m_hBmpHover = m_hBmpNormal;
-		m_hBmpPress = m_hBmpNormal;
-		m_hBmpDisabled = m_hBmpNormal;
-		if (lpszHoverFileName != NULL)
-		{
-			m_hBmpHover = CreateHBitmapFromFile(lpszHoverFileName);
-			m_hBmpPress = m_hBmpHover;
-			if (lpszPressFileName != NULL)
-			{
-				m_hBmpPress = CreateHBitmapFromFile(lpszPressFileName);
-				if (lpszDisabledFileName != NULL)
-				{
-					m_hBmpDisabled = CreateHBitmapFromFile(lpszDisabledFileName);
-				}
-			}
-		}
 	}
 
 	void SetImage(LPCTSTR lpszFileName, PNGTYPE type)
@@ -230,11 +152,14 @@ public:
 	{
 		m_bHandCursor = TRUE;
 	}
+
+	BOOL SubclassWindow(HWND hWnd)
+	{
+		//SubclassWindow只对CreateWindow时有效
+		//ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
+		return CWindowImpl<CXKnowButton, CButton>::SubclassWindow(hWnd) && ModifyStyle(0, BS_OWNERDRAW);
+	}
 private:
-	HBITMAP m_hBmpNormal;
-	HBITMAP m_hBmpHover;
-	HBITMAP m_hBmpPress;
-	HBITMAP m_hBmpDisabled;
 	HBITMAP m_hBmpBkgnd;
 
 	int m_iWidth;

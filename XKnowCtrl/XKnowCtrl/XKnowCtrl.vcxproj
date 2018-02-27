@@ -225,6 +225,7 @@
     </ClCompile>
     <ClCompile Include="XKnowCtrl.cpp" />
     <ClCompile Include="XKnowPng.cpp" />
+    <ClCompile Include="XKnowRender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\stb_image.h" />
@@ -233,7 +234,9 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="XKnowButton.h" />
+    <ClInclude Include="XKnowLabel.h" />
     <ClInclude Include="XKnowPng.h" />
+    <ClInclude Include="XKnowRender.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="XKnowCtrl.rc" />

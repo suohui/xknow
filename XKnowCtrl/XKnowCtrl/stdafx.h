@@ -18,9 +18,17 @@
 #include <atlmisc.h> 
 extern CAppModule _Module;
 
+#include <map>
+using namespace std;
+
 #include <stb_image.h>
 #include "XKnowPng.h"
+
+#include "XKnowRender.h"
 #include "XKnowButton.h"
+#include "XKnowLabel.h"
+
+
 
 #if defined _M_IX86
   #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")

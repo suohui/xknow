@@ -35,7 +35,7 @@ BEGIN
     PUSHBUTTON      "MIN",IDC_MIN,263,7,50,14
     PUSHBUTTON      "MENU",IDC_MENU,212,7,50,14
     CONTROL         "",IDC_LOGO,"Static",SS_BLACKFRAME,7,7,63,28
-    LTEXT           "我只是来测试的",IDC_LABELTEST,82,68,171,19
+    LTEXT           "我只是来测试的",IDC_LABELTEST,82,68,127,15
     PUSHBUTTON      "Button1",IDC_REBOOT,193,98,50,14
 END
 
@@ -80,41 +80,6 @@ END
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include ""atlres.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\XKnowCtrl.ico"
-
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
@@ -149,6 +114,41 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""atlres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\XKnowCtrl.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

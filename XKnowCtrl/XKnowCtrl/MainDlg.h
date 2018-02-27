@@ -93,7 +93,6 @@ public:
 
 		//设置按钮
 		m_MenuBtn.SubclassWindow(GetDlgItem(IDC_MENU).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_MenuBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
 		m_MenuBtn.SetHBmpBkgnd(m_hBkgndBmp);
 		TCHAR szMenuBtnFile[MAX_PATH] = { 0 };
 		PathCombine(szMenuBtnFile, szImageDir, _T("menu.png"));
@@ -102,7 +101,6 @@ public:
 		m_MenuBtn.SetHandCursor();
 
 		m_MinBtn.SubclassWindow(GetDlgItem(IDC_MIN).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_MinBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
 		m_MinBtn.SetHBmpBkgnd(m_hBkgndBmp);
 		TCHAR szMinBtnFile[MAX_PATH] = { 0 };
 		PathCombine(szMinBtnFile, szImageDir, _T("min.png"));
@@ -111,7 +109,6 @@ public:
 		m_MinBtn.SetHandCursor();
 
 		m_CloseBtn.SubclassWindow(GetDlgItem(IDOK).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_CloseBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
 		m_CloseBtn.SetHBmpBkgnd(m_hBkgndBmp);
 		TCHAR szCloseBtnFile[MAX_PATH] = { 0 };
 		PathCombine(szCloseBtnFile, szImageDir, _T("close.png"));
@@ -120,13 +117,15 @@ public:
 		m_CloseBtn.SetHandCursor();
 
 		m_RebootBtn.SubclassWindow(GetDlgItem(IDC_REBOOT).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_RebootBtn.ModifyStyle(0, BS_OWNERDRAW); //设置BS_OWNERDRAW样式
 		m_RebootBtn.SetHBmpBkgnd(m_hBkgndBmp);
 		TCHAR szRebootBtnFile[MAX_PATH] = { 0 };
 		PathCombine(szRebootBtnFile, szImageDir, _T("btn.png"));
 		m_RebootBtn.SetImage(szRebootBtnFile, PNGTYPE::FourInOne);
 		m_RebootBtn.MoveWindow(100, 200, 160, 32);
 		m_RebootBtn.SetHandCursor();
+
+		m_lblTest.SubclassWindow(GetDlgItem(IDC_LABELTEST).m_hWnd);
+		m_lblTest.SetHBmpBkgnd(m_hBkgndBmp);
 
 		return TRUE;
 	}
@@ -141,6 +140,8 @@ public:
 	CXKnowButton m_CloseBtn;
 
 	CXKnowButton m_RebootBtn;
+
+	CXKnowLabel m_lblTest;
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
