@@ -13,7 +13,7 @@ protected:
 			BOOL bUnderLine;
 			BOOL bItalic;
 		} fts[] = {
-			{_T("default.font12"), 12, FALSE, FALSE, FALSE},
+			{_T("default.font"), 12, FALSE, FALSE, FALSE},
 			{_T("default.font13"), 13, FALSE, FALSE, FALSE}
 		};
 
@@ -34,16 +34,24 @@ protected:
 
 	~CXKnowFontManager()
 	{
-		FONTMAP::iterator iter;
-		for (iter = m_hFontMap.begin(); iter != m_hFontMap.end(); iter++)
-		{
-			DeleteObject(iter->second);
-		}
+		DeleteFont();
 	}
 public:
 	HFONT GetFont(String strFontID)
 	{
 		return m_hFontMap[strFontID];
+	}
+	void DeleteFont()
+	{
+		if (!m_hFontMap.empty())
+		{
+			FONTMAP::iterator iter;
+			for (iter = m_hFontMap.begin(); iter != m_hFontMap.end(); iter++)
+			{
+				DeleteObject(iter->second);
+			}
+			m_hFontMap.clear();
+		}
 	}
 	static CXKnowFontManager* Instance()
 	{
@@ -51,8 +59,53 @@ public:
 	}
 private:
 	static CXKnowFontManager* m_pFontManager;
-	
 	FONTMAP m_hFontMap;
+};
+
+class CXKnowGobal
+{
+public:
+	static String GetImageDir() //图片路径，末尾带//
+	{
+		TCHAR szExePath[MAX_PATH] = { 0 };
+		GetModuleFileName(NULL, szExePath, MAX_PATH);
+		PathRemoveFileSpec(szExePath);
+		TCHAR szImagePath[MAX_PATH] = { 0 };
+		PathCombine(szImagePath, szExePath, _T("..\\img\\"));
+		return szImagePath;
+	}
+	static String GetNormalFontID()	//获取Normal字体
+	{
+		return _T("default.font");
+	}
+	static String GetHoverFontID()	//获取Hover字体
+	{
+		return _T("default.font");
+	}
+	static String GetPressFontID()	//获取Press字体
+	{
+		return _T("default.font");
+	}
+	static String GetDisabledFontID()	//获取Disabled字体
+	{
+		return _T("default.font");
+	}
+	static DWORD GetNormalTextColor()	//获取文字Normal色
+	{
+		return 0;
+	}
+	static DWORD GetHoverTextColor()	//获取文字Hover色
+	{
+		return 0;
+	}
+	static DWORD GetPressTextColor()	//获取文字Press色
+	{
+		return 0;
+	}
+	static DWORD GetDisabledTextColor()	//获取文字Disabled色
+	{
+		return 0;
+	}
 };
 
 enum PNGTYPE

@@ -32,7 +32,6 @@ using namespace std;
 #include "XKnowControlBase.h"
 #include "XKnowDlgBase.h"
 
-
 #include "XKnowButton.h"
 #include "XKnowLabel.h"
 
