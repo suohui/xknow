@@ -5,7 +5,10 @@
 ///需要在父窗口的消息映射表中加入一条REFLECT_NOTIFICATIONS()宏，父窗口就能够将支持消息反射的控件所发出的消息反传回去
 ///添加CHAIN_MSG_MAP_ALT(COwnerDraw<CXKnowButton>, 1)，窗口默认的绘制消息WM_ERASEBKGND、WM_PRINT、WM_PRINTCLIENT就不会触发
 class CXKnowButton : public CWindowImpl<CXKnowButton, CButton>,
-	public COwnerDraw<CXKnowButton>
+					 public COwnerDraw<CXKnowButton>,
+					 public CXKnowTextBase,
+					 public CXKnowImageBase,
+					 public CXKnowControlBase<CXKnowButton>			 
 {
 public:
 	BEGIN_MSG_MAP(CXKnowButton)
@@ -58,10 +61,12 @@ public:
 		CRect rcItem = lpDrawItemStruct->rcItem;
 		UINT nState = lpDrawItemStruct->itemState;
 
-		CRect rcRectTmp;
+		CRect rcRectTmp = m_rcImageNormal;
+		DWORD dwTextColor = m_dwTextNormalColor;
 		if (nState & ODS_DISABLED)
 		{
-			rcRectTmp = m_rcDisabled;
+			rcRectTmp = m_rcImageDisabled;
+			dwTextColor = m_dwTextDisableColor;
 		}
 		else
 		{
@@ -69,83 +74,34 @@ public:
 			{
 				if (nState & ODS_SELECTED)
 				{
-					rcRectTmp = m_rcPress;
+					rcRectTmp = m_rcImagePress;
+					dwTextColor = m_dwTextPressColor;
 				}
 				else
 				{
-					rcRectTmp = m_rcHover;
+					rcRectTmp = m_rcImageHover;
+					dwTextColor = m_dwTextHoverColor;
 				}
-			}
-			else
-			{
-				rcRectTmp = m_rcNormal;
 			}
 		}
 		//双缓冲绘图
 		CMemoryDC memDC(hdc, rcItem);
 		//画背景
-		CXKnowRender::DrawBkgnd(m_hWnd, memDC, m_hBmpBkgnd, rcItem);
+		CXKnowRender::DrawBkgnd(m_hWnd, memDC, rcItem, m_hBkgndBmp);
 		//画前景
-		CXKnowRender::DrawImage(memDC, m_hBmpAllInOne, rcItem, rcRectTmp, m_bAlpha);
+		CXKnowRender::DrawImage(memDC, rcItem, m_pImageInfo->hBitmap, rcRectTmp, m_pImageInfo->bAlpha);
 		//画文字
-		CXKnowRender::DrawText(memDC, L"立即启动", rcItem, 0x6D5539, _T("default.font12"), DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+		CXKnowRender::DrawText(memDC, m_strText, m_rcText.IsRectNull() ? rcItem : m_rcText, dwTextColor, m_strFontID, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	}
 
 	CXKnowButton()
 	{
-		m_hBmpBkgnd = NULL;
-		m_bAlpha = FALSE;
 		m_bOver = FALSE;
 		m_bTracking = FALSE;
-
 		m_bHandCursor = FALSE;
-
-		ZeroMemory(&m_lf, sizeof(m_lf));
-		::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(m_lf), &m_lf);
-		m_lf.lfCharSet = DEFAULT_CHARSET;
-		m_lf.lfHeight = -12;
-		m_lf.lfUnderline = TRUE;
-		lstrcpy(m_lf.lfFaceName, _T("微软雅黑"));
-		m_hFont = ::CreateFontIndirect(&m_lf);
 	}
 	~CXKnowButton()
 	{
-		if (m_hBmpAllInOne != NULL)
-		{
-			DeleteObject(m_hBmpAllInOne);
-			m_hBmpAllInOne = NULL;
-		}
-	}
-
-	void SetHBmpBkgnd(HBITMAP hBmp)
-	{
-		m_hBmpBkgnd = hBmp;
-	}
-
-	void SetImage(LPCTSTR lpszFileName, PNGTYPE type)
-	{
-		m_hBmpAllInOne = CreateHBitmapFromFile(lpszFileName, m_iWidth, m_iHeight, m_bAlpha);
-		if (type == PNGTYPE::TwoInOne)
-		{
-			m_rcNormal.SetRect(0, 0, m_iWidth / 2, m_iHeight);
-			m_rcHover.SetRect(m_iWidth / 2, 0, m_iWidth, m_iHeight);
-			m_rcPress = m_rcHover;
-			m_rcDisabled = m_rcNormal;
-		}
-		else if (type == PNGTYPE::ThreeInOne)
-		{
-			m_rcNormal.SetRect(0, 0, m_iWidth / 3, m_iHeight);
-			m_rcHover.SetRect(m_iWidth  / 3, 0, m_iWidth * 2 / 3, m_iHeight);
-			m_rcPress.SetRect(m_iWidth * 2 / 3, 0, m_iWidth, m_iHeight);
-			m_rcDisabled = m_rcNormal;
-		}
-		else if (type == PNGTYPE::FourInOne)
-		{
-			m_rcNormal.SetRect(0, 0, m_iWidth / 4, m_iHeight);
-			m_rcHover.SetRect(m_iWidth / 4, 0, m_iWidth * 2 / 4, m_iHeight);
-			m_rcPress.SetRect(m_iWidth * 2 / 4, 0, m_iWidth * 3 / 4, m_iHeight);
-			m_rcDisabled.SetRect(m_iWidth * 3 / 4, 0, m_iWidth, m_iHeight);
-		}
 	}
 	
 	void SetHandCursor()
@@ -160,22 +116,7 @@ public:
 		return CWindowImpl<CXKnowButton, CButton>::SubclassWindow(hWnd) && ModifyStyle(0, BS_OWNERDRAW);
 	}
 private:
-	HBITMAP m_hBmpBkgnd;
-
-	int m_iWidth;
-	int m_iHeight;
-	BOOL m_bAlpha;
-	HBITMAP m_hBmpAllInOne;
-	CRect m_rcNormal;
-	CRect m_rcHover;
-	CRect m_rcPress;
-	CRect m_rcDisabled;
-
 	BOOL m_bOver;
 	BOOL m_bTracking;
-
 	BOOL m_bHandCursor;
-
-	HFONT m_hFont;
-	LOGFONT m_lf;
 };

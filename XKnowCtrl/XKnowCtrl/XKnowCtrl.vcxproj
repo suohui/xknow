@@ -224,7 +224,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="XKnowCtrl.cpp" />
-    <ClCompile Include="XKnowPng.cpp" />
     <ClCompile Include="XKnowRender.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -234,8 +233,9 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="XKnowButton.h" />
+    <ClInclude Include="XKnowControlBase.h" />
+    <ClInclude Include="XKnowDlgBase.h" />
     <ClInclude Include="XKnowLabel.h" />
-    <ClInclude Include="XKnowPng.h" />
     <ClInclude Include="XKnowRender.h" />
   </ItemGroup>
   <ItemGroup>

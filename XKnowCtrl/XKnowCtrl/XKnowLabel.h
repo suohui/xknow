@@ -1,6 +1,8 @@
 #pragma once
 
-class CXKnowLabel : public CWindowImpl<CXKnowLabel, CStatic>
+class CXKnowLabel : public CWindowImpl<CXKnowLabel, CStatic>,
+					public CXKnowTextBase,
+					public CXKnowControlBase<CXKnowLabel>
 {
 public:
 	CXKnowLabel()
@@ -23,18 +25,10 @@ public:
 
 		CPaintDC dc(m_hWnd);
 		CMemoryDC memDC(dc, rcClient);
-
 		//画背景
-		CXKnowRender::DrawBkgnd(m_hWnd, memDC.m_hDC, m_hBmpBkgnd, rcClient);
+		CXKnowRender::DrawBkgnd(m_hWnd, memDC, rcClient, m_hBkgndBmp);
 		//画文字
-		CXKnowRender::DrawText(memDC.m_hDC, L"我就是来打酱油的", rcClient, 0x000000, _T("default.font12"), DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+		CXKnowRender::DrawText(memDC.m_hDC, m_strText, rcClient, m_dwTextNormalColor, m_strFontID, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS);
 		return 0;
 	}
-
-	void SetHBmpBkgnd(HBITMAP hBmp)
-	{
-		m_hBmpBkgnd = hBmp;
-	}
-private:
-	HBITMAP m_hBmpBkgnd;
 };

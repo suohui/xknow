@@ -10,7 +10,8 @@
 //5、画动画
 //6、画Label
 class CMainDlg : public CDialogImpl<CMainDlg>, public CUpdateUI<CMainDlg>,
-		public CMessageFilter, public CIdleHandler
+		public CMessageFilter, public CIdleHandler,
+		public CXKnowDlgBase<CMainDlg>
 {
 public:
 	enum { IDD = IDD_MAINDLG };
@@ -30,19 +31,16 @@ public:
 	END_UPDATE_UI_MAP()
 
 	BEGIN_MSG_MAP(CMainDlg)
-		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-
-		MESSAGE_HANDLER(WM_NCHITTEST, OnNcHitTest)
-		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, OnCtlColorStatic)
 
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
-
+		
 		REFLECT_NOTIFICATIONS()
+		CHAIN_MSG_MAP(CXKnowDlgBase)
 	END_MSG_MAP()
 
 // Handler prototypes (uncomment arguments if needed):
@@ -50,7 +48,7 @@ public:
 //	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
-	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	void InitDialog()
 	{
 		MoveWindow(0, 0, 681, 451);
 		// center the dialog on the screen
@@ -69,71 +67,68 @@ public:
 		pLoop->AddIdleHandler(this);
 
 		UIAddChildWindowContainer(m_hWnd);
-		//修改窗体属性
-		SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & (~WS_BORDER) & WS_POPUP);//无边框窗体
-		SetWindowLong(GWL_EXSTYLE, GetWindowLong(GWL_EXSTYLE) | WS_EX_APPWINDOW);    //显示在任务栏
+		//获取图片路径
+		TCHAR szExePath[MAX_PATH] = { 0 };
+		GetModuleFileName(NULL, szExePath, MAX_PATH);
+		PathRemoveFileSpec(szExePath);
+		TCHAR szImagePath[MAX_PATH] = { 0 };
+		PathCombine(szImagePath, szExePath, _T("..\\img\\"));
+		m_strImageDir = szImagePath;
 		//获取背景图片
-		memset(szImageDir, 0, MAX_PATH);
-		memset(szBkgFileName, 0, MAX_PATH);
-		GetModuleFileName(NULL, szImageDir, MAX_PATH);
-		PathRemoveFileSpec(szImageDir);
-		PathCombine(szImageDir, szImageDir, _T("..\\img"));
-		PathCombine(szBkgFileName, szImageDir, _T("bkg.png"));
-		m_hBkgndBmp = CreateHBitmapFromFile(szBkgFileName);
-
+		SetBkgndFilePath(m_strImageDir + _T("bkg.png"));
+		SetIconFilePath(m_strImageDir + _T("logo.png"));
+		SetIconRect(CRect(22, 12, 22 + 167, 12 + 32));
+		SetText(L"高频电话");
+		SetTextRect(CRect(200, 10, 250, 30));
 		//设置LOGO
 		CStatic logoWnd = (CStatic)GetDlgItem(IDC_LOGO);
-		TCHAR szLogoFile[MAX_PATH] = { 0 };
-		PathCombine(szLogoFile, szImageDir, _T("logo.png"));
-		m_hLogoBmp = CreateHBitmapFromFile(szLogoFile);
-		logoWnd.ModifyStyle(0xF, SS_BITMAP | SS_CENTERIMAGE);//设置静态控件的样式，使其可以使用位图，并试位标显示使居中
-		logoWnd.SetBitmap(m_hLogoBmp);
-		logoWnd.MoveWindow(22, 12, 167, 32);
+		
+		//m_hLogoBmp = CreateHBitmapFromFile((m_strImageDir + _T("logo.png")).c_str());
+		//logoWnd.ModifyStyle(0xF, SS_BITMAP | SS_CENTERIMAGE);//设置静态控件的样式，使其可以使用位图，并试位标显示使居中
+		//logoWnd.SetBitmap(m_hLogoBmp);
+		//logoWnd.MoveWindow(180+22, 12, 167, 32);
 
 
 		//设置按钮
 		m_MenuBtn.SubclassWindow(GetDlgItem(IDC_MENU).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_MenuBtn.SetHBmpBkgnd(m_hBkgndBmp);
-		TCHAR szMenuBtnFile[MAX_PATH] = { 0 };
-		PathCombine(szMenuBtnFile, szImageDir, _T("menu.png"));
-		m_MenuBtn.SetImage(szMenuBtnFile, PNGTYPE::ThreeInOne);
+		m_MenuBtn.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
+		m_MenuBtn.SetImageFilePath(m_strImageDir + _T("menu.png"), PNGTYPE::ThreeInOne);
 		m_MenuBtn.MoveWindow(680 - 12 - 6 * 2 - 28 * 3, 14, 28, 28);
 		m_MenuBtn.SetHandCursor();
 
 		m_MinBtn.SubclassWindow(GetDlgItem(IDC_MIN).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_MinBtn.SetHBmpBkgnd(m_hBkgndBmp);
-		TCHAR szMinBtnFile[MAX_PATH] = { 0 };
-		PathCombine(szMinBtnFile, szImageDir, _T("min.png"));
-		m_MinBtn.SetImage(szMinBtnFile, PNGTYPE::ThreeInOne);
+		m_MinBtn.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
+		m_MinBtn.SetImageFilePath(m_strImageDir + _T("min.png"), PNGTYPE::ThreeInOne);
 		m_MinBtn.MoveWindow(680 - 12 - 6 - 28 * 2, 14, 28, 28);
 		m_MinBtn.SetHandCursor();
 
 		m_CloseBtn.SubclassWindow(GetDlgItem(IDOK).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_CloseBtn.SetHBmpBkgnd(m_hBkgndBmp);
-		TCHAR szCloseBtnFile[MAX_PATH] = { 0 };
-		PathCombine(szCloseBtnFile, szImageDir, _T("close.png"));
-		m_CloseBtn.SetImage(szCloseBtnFile, PNGTYPE::ThreeInOne);
+		m_CloseBtn.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
+		m_CloseBtn.SetImageFilePath(m_strImageDir + _T("close.png"), PNGTYPE::ThreeInOne);
 		m_CloseBtn.MoveWindow(680 - 12 - 28, 14, 28, 28);
 		m_CloseBtn.SetHandCursor();
 
 		m_RebootBtn.SubclassWindow(GetDlgItem(IDC_REBOOT).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_RebootBtn.SetHBmpBkgnd(m_hBkgndBmp);
-		TCHAR szRebootBtnFile[MAX_PATH] = { 0 };
-		PathCombine(szRebootBtnFile, szImageDir, _T("btn.png"));
-		m_RebootBtn.SetImage(szRebootBtnFile, PNGTYPE::FourInOne);
+		m_RebootBtn.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
+		m_RebootBtn.SetImageFilePath(m_strImageDir + _T("btn.png"), PNGTYPE::FourInOne);
 		m_RebootBtn.MoveWindow(100, 200, 160, 32);
 		m_RebootBtn.SetHandCursor();
+		m_RebootBtn.SetText(L"立即重启");
 
 		m_lblTest.SubclassWindow(GetDlgItem(IDC_LABELTEST).m_hWnd);
-		m_lblTest.SetHBmpBkgnd(m_hBkgndBmp);
+		m_lblTest.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
+		m_lblTest.SetText(_T("我是我SubclassWindowSubclassWindowSubclassWindow"));
+		m_lblTest.SetControlPos(50, 150, 100, 20);
 
-		return TRUE;
+		m_AboutBtn.SubclassWindow(GetDlgItem(ID_APP_ABOUT).m_hWnd);
+		m_AboutBtn.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
+		m_AboutBtn.SetImageFilePath(m_strImageDir + _T("test.png"), PNGTYPE::ThreeInOne);
+		m_AboutBtn.MoveWindow(425, 10, 42, 60);
+		m_AboutBtn.SetHandCursor();
+		m_AboutBtn.SetText(L"收益");
+		m_AboutBtn.SetTextRect(CRect(0, 42, 42, 60));
 	}
-	TCHAR szImageDir[MAX_PATH];
-	TCHAR szBkgFileName[MAX_PATH];
-
-	HBITMAP m_hLogoBmp;
-	HBITMAP m_hBkgndBmp;
+	String m_strImageDir; //图片路径，末尾带//
 
 	CXKnowButton m_MenuBtn;
 	CXKnowButton m_MinBtn;
@@ -141,7 +136,10 @@ public:
 
 	CXKnowButton m_RebootBtn;
 
+	CXKnowButton m_AboutBtn;
+
 	CXKnowLabel m_lblTest;
+
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
@@ -150,29 +148,6 @@ public:
 		ATLASSERT(pLoop != NULL);
 		pLoop->RemoveMessageFilter(this);
 		pLoop->RemoveIdleHandler(this);
-
-		DeleteObject(m_hLogoBmp);
-		DeleteObject(m_hBkgndBmp);
-
-		return 0;
-	}
-	//无边框窗体可拖动
-	LRESULT OnNcHitTest(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
-	{
-		return HTCAPTION;
-	}
-
-	LRESULT OnPaint(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
-	{
-		CPaintDC dc(m_hWnd);
-		HDC hMemDC = CreateCompatibleDC(dc.m_hDC);
-		HGDIOBJ hOld = SelectObject(hMemDC, m_hBkgndBmp);
-		RECT rcClient;
-		GetClientRect(&rcClient);
-		BitBlt(dc.m_hDC, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hMemDC, 0, 0, SRCCOPY);
-
-		SelectObject(hMemDC, hOld);
-		DeleteDC(hMemDC);
 		return 0;
 	}
 	
@@ -184,22 +159,6 @@ public:
 
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
-		CStatic lbl = (CStatic)GetDlgItem(IDC_LABELTEST);
-		
-		//lbl.SetWindowText(L"已加载");
-		
-
-		CFont ft;
-		//ft.CreatePointFont(12, L"宋体", lbl.GetDC(), true, true);
-		ft.CreateFont(12, 0, 0, 0, FW_NORMAL, TRUE, TRUE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
-			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"微软雅黑");
-		lbl.SetFont(ft.m_hFont);
-		::SetTextColor(lbl.GetDC(), RGB(255, 0, 255));
-		lbl.ShowWindow(SW_HIDE);
-		lbl.ShowWindow(SW_SHOW);
-
-		lbl.GetFont();
-
 		//CAboutDlg dlg;
 		//dlg.DoModal();
 		return 0;

@@ -15,16 +15,24 @@
 #include <atlapp.h>
 #include <atlframe.h>
 #include <atlctrls.h>
-#include <atlmisc.h> 
+#include <atlmisc.h>    //http://blog.csdn.net/immortal_mcl/article/details/5920138
 extern CAppModule _Module;
 
 #include <map>
+#include <string>
 using namespace std;
+#ifdef UNICODE
+#define String  std::wstring
+#else
+#define String  std::string
+#endif // !UNICODE
 
 #include <stb_image.h>
-#include "XKnowPng.h"
-
 #include "XKnowRender.h"
+#include "XKnowControlBase.h"
+#include "XKnowDlgBase.h"
+
+
 #include "XKnowButton.h"
 #include "XKnowLabel.h"
 
