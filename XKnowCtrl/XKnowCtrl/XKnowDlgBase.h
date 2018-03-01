@@ -63,7 +63,7 @@ public:
 			CXKnowRender::DrawImage(dcMem, m_rcIcon, m_pIconImageInfo->hBitmap, CRect(0, 0, m_pIconImageInfo->iWidth, m_pIconImageInfo->iHeight), m_pIconImageInfo->bAlpha, FALSE);
 		}
 		//»­Title
-		CXKnowRender::DrawText(dcMem, m_strText, m_rcText, m_dwTextNormalColor, m_strFontID, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS);
+		CXKnowRender::DrawText(dcMem, m_strText, m_rcText, m_dwTextColor[0], m_strFontID, m_uFormatStyle);
 
 		return 0;
 	}

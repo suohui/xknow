@@ -77,9 +77,9 @@ public:
 		//获取背景图片
 		SetBkgndFilePath(m_strImageDir + _T("bkg.png"));
 		SetIconFilePath(m_strImageDir + _T("logo.png"));
-		SetIconRect(CRect(22, 12, 22 + 167, 12 + 32));
+		SetIconRect(22, 12, 167, 32);
 		SetText(L"高频电话");
-		SetTextRect(CRect(200, 10, 250, 30));
+		SetTextRect(200, 10, 50, 20);
 		//设置LOGO
 		CStatic logoWnd = (CStatic)GetDlgItem(IDC_LOGO);
 		
@@ -113,10 +113,12 @@ public:
 		m_RebootBtn.SetImageFilePath(m_strImageDir + _T("btn.png"), PNGTYPE::FourInOne);
 		m_RebootBtn.MoveWindow(100, 200, 160, 32);
 		m_RebootBtn.SetHandCursor();
+		m_RebootBtn.SetTextColor(0, GetSysColor(COLOR_BTNFACE), GetSysColor(COLOR_GRAYTEXT));
 		m_RebootBtn.SetText(L"立即重启");
 
 		m_lblTest.SubclassWindow(GetDlgItem(IDC_LABELTEST).m_hWnd);
-		m_lblTest.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
+		//m_lblTest.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
+		m_lblTest.SetBkgndColor(GetSysColor(COLOR_BTNFACE));
 		m_lblTest.SetText(_T("我是我SubclassWindowSubclassWindowSubclassWindow"));
 		m_lblTest.SetControlPos(50, 150, 100, 20);
 
@@ -126,7 +128,7 @@ public:
 		m_AboutBtn.MoveWindow(425, 10, 42, 60);
 		m_AboutBtn.SetHandCursor();
 		m_AboutBtn.SetText(L"收益");
-		m_AboutBtn.SetTextRect(CRect(0, 42, 42, 60));
+		m_AboutBtn.SetTextRect(0, 42, 42, 18);
 	}
 	String m_strImageDir; //图片路径，末尾带//
 

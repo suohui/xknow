@@ -15,20 +15,11 @@ public:
 	}
 
 	BEGIN_MSG_MAP(CXKnowLabel)
-		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+		CHAIN_MSG_MAP(CXKnowControlBase)
 	END_MSG_MAP()
 public:
-	LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	void DoPaint(HDC hdc, CRect rcClient)
 	{
-		CRect rcClient;
-		GetClientRect(&rcClient);
-
-		CPaintDC dc(m_hWnd);
-		CMemoryDC memDC(dc, rcClient);
-		//»­±³¾°
-		CXKnowRender::DrawBkgnd(m_hWnd, memDC, rcClient, m_hBkgndBmp);
-		//»­ÎÄ×Ö
-		CXKnowRender::DrawText(memDC.m_hDC, m_strText, rcClient, m_dwTextNormalColor, m_strFontID, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS);
-		return 0;
+		CXKnowRender::DrawText(hdc, m_strText, rcClient, m_dwTextColor[0], m_strFontID, m_uFormatStyle);
 	}
 };

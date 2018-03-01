@@ -8,7 +8,7 @@ class CXKnowButton : public CWindowImpl<CXKnowButton, CButton>,
 					 public COwnerDraw<CXKnowButton>,
 					 public CXKnowTextBase,
 					 public CXKnowImageBase,
-					 public CXKnowControlBase<CXKnowButton>			 
+					 public CXKnowControlBase1<CXKnowButton>			 
 {
 public:
 	BEGIN_MSG_MAP(CXKnowButton)
@@ -61,12 +61,10 @@ public:
 		CRect rcItem = lpDrawItemStruct->rcItem;
 		UINT nState = lpDrawItemStruct->itemState;
 
-		CRect rcRectTmp = m_rcImageNormal;
-		DWORD dwTextColor = m_dwTextNormalColor;
+		int iStateIndex = 0;
 		if (nState & ODS_DISABLED)
 		{
-			rcRectTmp = m_rcImageDisabled;
-			dwTextColor = m_dwTextDisableColor;
+			iStateIndex = 3;
 		}
 		else
 		{
@@ -74,13 +72,11 @@ public:
 			{
 				if (nState & ODS_SELECTED)
 				{
-					rcRectTmp = m_rcImagePress;
-					dwTextColor = m_dwTextPressColor;
+					iStateIndex = 2;
 				}
 				else
 				{
-					rcRectTmp = m_rcImageHover;
-					dwTextColor = m_dwTextHoverColor;
+					iStateIndex = 1;
 				}
 			}
 		}
@@ -89,9 +85,9 @@ public:
 		//»­±³¾°
 		CXKnowRender::DrawBkgnd(m_hWnd, memDC, rcItem, m_hBkgndBmp);
 		//»­Ç°¾°
-		CXKnowRender::DrawImage(memDC, rcItem, m_pImageInfo->hBitmap, rcRectTmp, m_pImageInfo->bAlpha);
+		CXKnowRender::DrawImage(memDC, rcItem, m_pImageInfo->hBitmap, m_rcImageRect[iStateIndex], m_pImageInfo->bAlpha);
 		//»­ÎÄ×Ö
-		CXKnowRender::DrawText(memDC, m_strText, m_rcText.IsRectNull() ? rcItem : m_rcText, dwTextColor, m_strFontID, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+		CXKnowRender::DrawText(memDC, m_strText, m_rcText.IsRectNull() ? rcItem : m_rcText, m_dwTextColor[iStateIndex], m_strFontID, m_uFormatStyle);
 	}
 
 	CXKnowButton()

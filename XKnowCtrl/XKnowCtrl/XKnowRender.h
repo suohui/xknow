@@ -212,6 +212,13 @@ public:
 		memDC.SelectBitmap(hOldBmp);
 	}
 
+	static void DrawColor(HDC hdc, CRect &rcPaint, DWORD dwColor)
+	{
+		CDCHandle dc(hdc);
+		dc.SetBkColor(RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor)));
+		dc.ExtTextOut(0, 0, ETO_OPAQUE, &rcPaint, NULL, 0, NULL);
+	}
+
 	static void DrawText(HDC hdc, String strText, RECT& rcText, DWORD dwTextColor, String strFontID, UINT uStyle)
 	{
 		if (strText.empty()) return;
