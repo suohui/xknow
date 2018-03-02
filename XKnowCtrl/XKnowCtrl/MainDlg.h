@@ -90,42 +90,37 @@ public:
 		m_MenuBtn.SetBkgndBitmap(GetBkgndHBitmap());
 		m_MenuBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("menu.png"), PNGTYPE::ThreeInOne);
 		m_MenuBtn.MoveWindow(680 - 12 - 6 * 2 - 28 * 3, 14, 28, 28);
-		m_MenuBtn.SetHandCursor();
 
 		m_MinBtn.SubclassWindow(GetDlgItem(IDC_MIN).m_hWnd);	//SubclassWindow只对CreateWindow时有效
 		m_MinBtn.SetBkgndBitmap(GetBkgndHBitmap());
 		m_MinBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("min.png"), PNGTYPE::ThreeInOne);
 		m_MinBtn.MoveWindow(680 - 12 - 6 - 28 * 2, 14, 28, 28);
-		m_MinBtn.SetHandCursor();
 
 		m_CloseBtn.SubclassWindow(GetDlgItem(IDOK).m_hWnd);	//SubclassWindow只对CreateWindow时有效
 		m_CloseBtn.SetBkgndBitmap(GetBkgndHBitmap());
 		m_CloseBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("close.png"), PNGTYPE::ThreeInOne);
 		m_CloseBtn.MoveWindow(680 - 12 - 28, 14, 28, 28);
-		m_CloseBtn.SetHandCursor();
 
 		m_RebootBtn.SubclassWindow(GetDlgItem(IDC_REBOOT).m_hWnd);	//SubclassWindow只对CreateWindow时有效
 		m_RebootBtn.SetBkgndBitmap(GetBkgndHBitmap());
 		m_RebootBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("btn.png"), PNGTYPE::FourInOne);
 		m_RebootBtn.MoveWindow(100, 200, 160, 32);
-		m_RebootBtn.SetHandCursor();
 		m_RebootBtn.SetTextColor(0, GetSysColor(COLOR_BTNFACE), GetSysColor(COLOR_GRAYTEXT), 0);
-		m_RebootBtn.EnableWindow(FALSE);
+		//m_RebootBtn.EnableWindow(FALSE);
 		m_RebootBtn.SetText(L"立即重启");
 
 		m_lblTest.SubclassWindow(GetDlgItem(IDC_LABELTEST).m_hWnd);
 		//m_lblTest.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
 		m_lblTest.SetBkgndColor(GetSysColor(COLOR_BTNFACE));
 		m_lblTest.SetText(_T("我是我SubclassWindowSubclassWindowSubclassWindow"));
-		m_lblTest.SetControlPos(50, 150, 100, 20);
+		m_lblTest.MoveWindow(50, 150, 100, 20);
 
 		m_AboutBtn.SubclassWindow(GetDlgItem(ID_APP_ABOUT).m_hWnd);
 		m_AboutBtn.SetBkgndBitmap(GetBkgndHBitmap());
 		m_AboutBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("test.png"), PNGTYPE::ThreeInOne);
 		m_AboutBtn.MoveWindow(425, 10, 42, 60);
-		m_AboutBtn.SetHandCursor();
 		m_AboutBtn.SetText(L"收益");
-		//m_AboutBtn.EnableWindow(FALSE);
+		m_AboutBtn.EnableWindow(FALSE);
 		m_AboutBtn.SetTextRect(0, 42, 42, 18);
 
 	}

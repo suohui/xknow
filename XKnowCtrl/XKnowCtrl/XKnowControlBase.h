@@ -157,38 +157,24 @@ protected:
 };
 
 template <class T>
-class CXKnowControlBase : public CMessageMap
+class CXKnowControlBase
 {
 public:
 	CXKnowControlBase()
 	{
 		m_hBkgndBmp = NULL;
 		m_dwBkgndColor = 0;
-		m_bOver = FALSE;
-		m_bTracking = FALSE;
-		m_bMouseDown = FALSE;
-		m_bHandCursor = FALSE;
 	}
 	~CXKnowControlBase()
 	{
-		//
 	}
-
-	BEGIN_MSG_MAP(CXKnowControlBase)
-		MESSAGE_HANDLER(WM_PAINT, OnPaint)
-		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
-		MESSAGE_HANDLER(WM_MOUSEHOVER, OnMouseHover)
-		MESSAGE_HANDLER(WM_MOUSELEAVE, OnMouseLeave)
-		MESSAGE_HANDLER(WM_SETCURSOR, OnSetCursor)
-	ALT_MSG_MAP(1)
-		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLButtonDown)
-		MESSAGE_HANDLER(WM_LBUTTONUP, OnLButtonUp)
-	END_MSG_MAP()
 public:
 	//设置控件背景图片
 	void SetBkgndBitmap(HBITMAP hBmp)
 	{
 		m_hBkgndBmp = hBmp;
+		T* pThis = static_cast<T*>(this);
+		pThis->InvalidateRect(NULL, FALSE);
 	}
 	//设置控件背景颜色
 	void SetBkgndColor(DWORD dwColor)
@@ -197,105 +183,19 @@ public:
 		T* pThis = static_cast<T*>(this);
 		pThis->InvalidateRect(NULL, FALSE);
 	}
-	//设置控件位置
-	void SetControlPos(int iLeft, int iTop, int iWidth, int iHeight)
-	{
-		T* pThis = static_cast<T*>(this);
-		pThis->MoveWindow(iLeft, iTop, iWidth, iHeight);
-	}
-	//设置控件手型鼠标
-	void SetHandCursor()
-	{
-		m_bHandCursor = TRUE;
-	}
 
-	// Overrideables//底色或背景已经处理好了，只需要绘制控件特有内容即可
-	void DoPaint(HDC, CRect, int iStateIndex)
-	{
-		// must be implemented
-		ATLASSERT(FALSE);
-	}
 protected:
-	LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	void DrawControlBkgnd(HDC hdc, CRect rcBkgnd)
 	{
 		T* pThis = static_cast<T*>(this);
-		CRect rcClient;
-		pThis->GetClientRect(&rcClient);
-
-		CPaintDC dc(pThis->m_hWnd);
-		CMemoryDC memDC(dc, rcClient);
+		CDCHandle dc(hdc);
 		if (0 != m_dwBkgndColor)
-			CXKnowRender::DrawColor(memDC, rcClient, m_dwBkgndColor);
+			CXKnowRender::DrawColor(dc, rcBkgnd, m_dwBkgndColor);
 		if (NULL != m_hBkgndBmp)
-			CXKnowRender::DrawBkgnd(pThis->m_hWnd, memDC, rcClient, m_hBkgndBmp);
-		int iStateIndex = pThis->IsWindowEnabled() ? 0 : 3;
-		if (m_bMouseDown)
-			iStateIndex = 2;
-		else if (m_bOver)
-			iStateIndex = 1;
-		pThis->DoPaint(memDC, rcClient, iStateIndex);
-		return 0;
+			CXKnowRender::DrawBkgnd(pThis->m_hWnd, dc, rcBkgnd, m_hBkgndBmp);
 	}
 
-	LRESULT OnMouseMove(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-	{
-		if (!m_bTracking)
-		{
-			T* pThis = static_cast<T*>(this);
-			TRACKMOUSEEVENT tme;
-			tme.cbSize = sizeof(TRACKMOUSEEVENT);
-			tme.dwFlags = TME_LEAVE | TME_HOVER;
-			tme.dwHoverTime = 10;
-			tme.hwndTrack = pThis->m_hWnd;
-			m_bTracking = ::_TrackMouseEvent(&tme);
-		}
-		return 0;
-	}
-	LRESULT OnMouseHover(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-	{
-		T* pThis = static_cast<T*>(this);
-		m_bOver = TRUE;
-		pThis->InvalidateRect(NULL);
-		return 0;
-	}
-	LRESULT OnMouseLeave(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-	{
-		T* pThis = static_cast<T*>(this);
-		m_bOver = FALSE;
-		m_bTracking = FALSE;
-		pThis->InvalidateRect(NULL, FALSE);
-		return 0;
-	}
-	LRESULT OnLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-	{
-		m_bMouseDown = TRUE;
-		T* pThis = static_cast<T*>(this);
-		pThis->SetCapture();	//在通常情况下，只有当鼠标位于窗体内时，窗体才能接收到鼠标的消息。如果需要接收所有的鼠标消息而不论鼠标是否在窗口内，这时可以调用SetCapture函数来实现
-		pThis->InvalidateRect(NULL, FALSE);
-		return 0;
-	}
-	LRESULT OnLButtonUp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-	{
-		::ReleaseCapture();
-		m_bMouseDown = FALSE;
-		T* pThis = static_cast<T*>(this);
-		pThis->InvalidateRect(NULL, FALSE);
-		return 0;
-	}
-	LRESULT OnSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-	{
-		if (m_bHandCursor)
-		{
-			::SetCursor(::LoadCursor(NULL, IDC_HAND));
-		}
-		return 0;
-	}
 protected:
 	HBITMAP m_hBkgndBmp;	//控件背景图片句柄
 	DWORD m_dwBkgndColor;	//控件背景颜色
-
-	BOOL m_bOver;
-	BOOL m_bTracking;
-	BOOL m_bMouseDown;
-	BOOL m_bHandCursor;
 };
