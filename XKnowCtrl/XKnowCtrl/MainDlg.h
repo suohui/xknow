@@ -133,11 +133,8 @@ public:
 	CXKnowButton m_MenuBtn;
 	CXKnowButton m_MinBtn;
 	CXKnowButton m_CloseBtn;
-
 	CXKnowButton m_RebootBtn;
-
 	CXKnowButton m_AboutBtn;
-
 	CXKnowLabel m_lblTest;
 
 
