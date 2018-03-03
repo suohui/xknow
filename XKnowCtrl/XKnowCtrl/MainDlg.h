@@ -35,14 +35,16 @@ public:
 
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, OnCtlColorStatic)
 
-		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
+		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnOK)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
 
-		COMMAND_ID_HANDLER(IDC_MENU, OnAppAbout)
-		COMMAND_ID_HANDLER(IDC_MIN, OnAppAbout)
-		REFLECT_NOTIFICATIONS()
+		COMMAND_ID_HANDLER(IDC_MENU, OnAppAbout1)
+		COMMAND_ID_HANDLER(IDC_MIN, OnAppAbout2)
+
 		CHAIN_MSG_MAP(CXKnowDlgBase)
+		REFLECT_NOTIFICATIONS()
+		
 	END_MSG_MAP()
 
 // Handler prototypes (uncomment arguments if needed):
@@ -104,7 +106,7 @@ public:
 		m_RebootBtn.SubclassWindow(GetDlgItem(IDC_REBOOT).m_hWnd);	//SubclassWindow只对CreateWindow时有效
 		m_RebootBtn.SetBkgndBitmap(GetBkgndHBitmap());
 		m_RebootBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("btn.png"), PNGTYPE::FourInOne);
-		m_RebootBtn.MoveWindow(100, 200, 160, 32);
+		m_RebootBtn.MoveWindow(150, 200, 160, 32);
 		m_RebootBtn.SetTextColor(0, GetSysColor(COLOR_BTNFACE), GetSysColor(COLOR_GRAYTEXT), 0);
 		//m_RebootBtn.EnableWindow(FALSE);
 		m_RebootBtn.SetText(L"立即重启");
@@ -112,8 +114,8 @@ public:
 		m_lblTest.SubclassWindow(GetDlgItem(IDC_LABELTEST).m_hWnd);
 		//m_lblTest.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
 		m_lblTest.SetBkgndColor(GetSysColor(COLOR_BTNFACE));
-		m_lblTest.SetText(_T("我是我SubclassWindowSubclassWindowSubclassWindow"));
-		m_lblTest.MoveWindow(50, 150, 100, 20);
+		m_lblTest.SetText(_T("像\t素是组成点阵图的基本单位,厘米和像素是没有换算关系的; 在点阵图中有一个单"));
+		m_lblTest.MoveWindow(50, 150, 100, 80);
 
 		m_AboutBtn.SubclassWindow(GetDlgItem(ID_APP_ABOUT).m_hWnd);
 		m_AboutBtn.SetBkgndBitmap(GetBkgndHBitmap());
@@ -122,9 +124,7 @@ public:
 		m_AboutBtn.SetText(L"收益");
 		m_AboutBtn.EnableWindow(FALSE);
 		m_AboutBtn.SetTextRect(0, 42, 42, 18);
-
 	}
-
 	CXKnowButton m_MenuBtn;
 	CXKnowButton m_MinBtn;
 	CXKnowButton m_CloseBtn;
@@ -149,7 +149,14 @@ public:
 		return (BOOL)((HBRUSH)GetStockObject(NULL_BRUSH));
 	}
 
-	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	LRESULT OnAppAbout1(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	{
+		//CAboutDlg dlg;
+		//dlg.DoModal();
+		//m_lblTest.SetBkgndColor(RGB(122, 240, 153));
+		return 0;
+	}
+	LRESULT OnAppAbout2(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
 		//CAboutDlg dlg;
 		//dlg.DoModal();

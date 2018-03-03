@@ -272,14 +272,53 @@ public:
 		dc.ExtTextOut(0, 0, ETO_OPAQUE, &rcPaint, NULL, 0, NULL);
 	}
 
-	static void DrawText(HDC hdc, String strText, RECT& rcText, DWORD dwTextColor, String strFontID, UINT uStyle)
+	static void DrawText(HDC hdc, String strText, RECT& rcText, DWORD dwTextColor, String strFontID, UINT uStyle, BOOL bMultipLine = FALSE)
 	{
 		if (strText.empty()) return;
 		CDCHandle dc(hdc);
 		dc.SetBkMode(TRANSPARENT);
 		dc.SetTextColor(RGB(GetBValue(dwTextColor), GetGValue(dwTextColor), GetRValue(dwTextColor)));
 		HFONT hOldFont = dc.SelectFont(CXKnowFontManager::Instance()->GetFont(strFontID));
-		dc.DrawText(strText.c_str(), -1, &rcText, uStyle);
+		if (bMultipLine)
+		{
+			int iLength = strText.length();
+			int iIndex = 0;
+			LPCTSTR lpTmp = strText.c_str();
+			int iTop = 0;
+
+			int iRowHeight = 20;
+			int iLines = (rcText.bottom - rcText.top) / iRowHeight;
+			for (int i = 0; i < iLines; i++)
+			{
+				//按行来画
+				int iStart = 0;
+				int iLenTmp = 0;
+				SIZE size = { 0, 0 };
+				while (size.cx < rcText.right - rcText.left && iIndex + iLenTmp < iLength)
+				{
+					iStart++;
+					iLenTmp++;
+					::GetTextExtentPoint32(hdc, lpTmp, iStart, &size);
+				}
+				if (size.cx > rcText.right - rcText.left)
+				{
+					iStart--;
+				}
+				dc.TextOut(0, iTop, lpTmp, iStart);
+				iIndex += iStart;
+				iTop += iRowHeight;
+				lpTmp = strText.c_str() + iIndex;
+				if (iIndex < iLength && i == iLines-2) //最后一行特殊处理,超出的 就不再画了
+				{
+					dc.DrawText(lpTmp, -1, CRect(0, iTop, rcText.right, rcText.bottom), DT_LEFT | DT_WORD_ELLIPSIS);
+					break;
+				}
+			}
+		}
+		else
+		{
+			dc.DrawText(strText.c_str(), -1, &rcText, uStyle);
+		}
 		dc.SelectFont(hOldFont);
 	}
 };

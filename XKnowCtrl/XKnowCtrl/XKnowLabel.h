@@ -26,7 +26,7 @@ protected:
 		CMemoryDC memDC(dc, rcClient);
 		//»­±³¾°¡¢»­ÎÄ×Ö
 		DrawControlBkgnd(memDC, rcClient);
-		CXKnowRender::DrawText(memDC, m_strText, rcClient, m_dwTextColor[0], m_strFontID[0], m_uFormatStyle);
+		CXKnowRender::DrawText(memDC, m_strText, rcClient, m_dwTextColor[0], m_strFontID[0], m_uFormatStyle, true);
 		return 0;
 	}
 };

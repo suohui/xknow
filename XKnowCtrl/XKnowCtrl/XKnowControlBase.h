@@ -134,14 +134,14 @@ public:
 			m_rcImageRect[0].SetRect(0, 0, iWidth / 2, iHeight);
 			m_rcImageRect[1].SetRect(iWidth / 2, 0, iWidth, iHeight);
 			m_rcImageRect[2] = m_rcImageRect[1];
-			m_rcImageRect[3] = m_rcImageRect[0];
+			m_rcImageRect[3] = m_rcImageRect[1];
 		}
 		else if (type == PNGTYPE::ThreeInOne)
 		{
 			m_rcImageRect[0].SetRect(0, 0, iWidth / 3, iHeight);
 			m_rcImageRect[1].SetRect(iWidth / 3, 0, iWidth * 2 / 3, iHeight);
 			m_rcImageRect[2].SetRect(iWidth * 2 / 3, 0, iWidth, iHeight);
-			m_rcImageRect[3] = m_rcImageRect[0];
+			m_rcImageRect[3] = m_rcImageRect[2];
 		}
 		else if (type == PNGTYPE::FourInOne)
 		{

@@ -37,6 +37,7 @@ BEGIN
     CONTROL         "",IDC_LOGO,"Static",SS_BLACKFRAME,124,179,63,28
     LTEXT           "我只是来测试的",IDC_LABELTEST,82,68,127,15
     PUSHBUTTON      "Button1",IDC_REBOOT,193,98,50,14
+    LTEXT           "简单测试",IDC_SIMPLETEST,168,15,41,14
 END
 
 
