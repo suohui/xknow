@@ -161,6 +161,8 @@ public:
 		//CAboutDlg dlg;
 		//dlg.DoModal();
 		//m_lblTest.SetBkgndColor(RGB(122, 240, 153));
+		SetText(L"¹þ¹þ");
+		InvalidateRect(&m_rcText);
 		return 0;
 	}
 

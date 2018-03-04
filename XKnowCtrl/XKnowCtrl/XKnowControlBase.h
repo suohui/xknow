@@ -21,10 +21,9 @@ public:
 		m_bMultiLine = FALSE;
 	}
 
-	void SetText(String strText, BOOL bMultiLine = FALSE)
+	void SetText(String strText)
 	{
 		m_strText = strText;
-		m_bMultiLine = bMultiLine;
 	}
 
 	void SetTextColor(DWORD dwTextNormalColor, DWORD dwTextHoverColor = -1, DWORD dwTextPressColor = -1, DWORD dwTextDisableColor = -1)
@@ -76,7 +75,7 @@ public:
 		m_bMultiLine = bMultiLine;
 	}
 
-protected:
+public:
 	String m_strText;	//文字内容
 	CRect m_rcText;	//文字绘制矩形框
 	UINT  m_uFormatStyle; //文字绘制样式
@@ -84,6 +83,73 @@ protected:
 	DWORD m_dwTextColor[4];//字体颜色
 	String m_strFontID[4]; //字体ID
 };
+
+class CXKnowMultiTextBase
+{
+public:
+	CXKnowMultiTextBase()
+	{
+		m_MultiTextInfoMap.clear();
+	}
+	~CXKnowMultiTextBase()
+	{
+		map<String, CXKnowTextBase*>::iterator iter;
+		for (iter = m_MultiTextInfoMap.begin(); iter != m_MultiTextInfoMap.end(); iter++)
+		{
+			if (NULL != iter->second)
+			{
+				delete iter->second;
+				iter->second = NULL;
+			}
+		}
+		m_MultiTextInfoMap.clear();
+	}
+
+	void SetText(String strID, String strText)
+	{
+		m_MultiTextInfoMap[strID]->SetText(strText);
+	}
+
+	void SetTextColor(String strID, DWORD dwTextNormalColor)
+	{
+		m_MultiTextInfoMap[strID]->SetTextColor(dwTextNormalColor);
+	}
+
+	void SetTextFontID(String strID, String strNormal)
+	{
+		m_MultiTextInfoMap[strID]->SetTextFontID(strNormal);
+	}
+
+	void SetTextRect(String strID, int iLeft, int iTop, int iWidth, int iHeight)
+	{
+		m_MultiTextInfoMap[strID]->SetTextRect(iLeft, iTop, iWidth, iHeight);
+	}
+
+	void SetTextFormatStyle(String strID, UINT uStyle)
+	{
+		m_MultiTextInfoMap[strID]->SetTextFormatStyle(uStyle);
+	}
+
+	void SetTextMultiLine(String strID, BOOL bMultiLine)
+	{
+		m_MultiTextInfoMap[strID]->SetTextMultiLine(bMultiLine);
+	}
+
+	void DrawTextMap(HDC hDC)
+	{
+		map<String, CXKnowTextBase*>::iterator iter;
+		for (iter = m_MultiTextInfoMap.begin(); iter != m_MultiTextInfoMap.end(); iter++)
+		{
+			if (NULL != iter->second)
+			{
+				CXKnowRender::DrawText(hDC, iter->second->m_strText, iter->second->m_rcText, iter->second->m_dwTextColor[0], iter->second->m_strFontID[0], iter->second->m_uFormatStyle);
+			}
+		}
+	}
+private:
+	map<String, CXKnowTextBase*> m_MultiTextInfoMap;
+};
+
 //Icon图标信息基础类，单一图片信息，例如：按钮上的标识图标、窗体LOGO，
 class CXKnowIconBase
 {
