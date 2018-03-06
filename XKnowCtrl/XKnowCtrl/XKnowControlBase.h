@@ -7,15 +7,15 @@ public:
 	CXKnowTextBase()
 	{
 		//设置默认字体ID
-		m_strFontID[0] = CXKnowGobal::GetNormalFontID();
-		m_strFontID[1] = CXKnowGobal::GetHoverFontID();
-		m_strFontID[2] = CXKnowGobal::GetPressFontID();
-		m_strFontID[3] = CXKnowGobal::GetDisabledFontID();
+		m_strFontID[0] = CXKnowGobal::GetTextNormalFontID();
+		m_strFontID[1] = CXKnowGobal::GetTextHoverFontID();
+		m_strFontID[2] = CXKnowGobal::GetTextPressFontID();
+		m_strFontID[3] = CXKnowGobal::GetTextDisabledFontID();
 		//设置默认字体颜色
-		m_dwTextColor[0] = CXKnowGobal::GetNormalTextColor();
-		m_dwTextColor[1] = CXKnowGobal::GetHoverTextColor();
-		m_dwTextColor[2] = CXKnowGobal::GetPressTextColor();
-		m_dwTextColor[3] = CXKnowGobal::GetDisabledTextColor();
+		m_dwTextColor[0] = CXKnowGobal::GetTextNormalColor();
+		m_dwTextColor[1] = CXKnowGobal::GetTextHoverColor();
+		m_dwTextColor[2] = CXKnowGobal::GetTextPressColor();
+		m_dwTextColor[3] = CXKnowGobal::GetTextDisabledColor();
 		//设置默认字体绘制样式
 		m_uFormatStyle = DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS;
 		m_bMultiLine = FALSE;
@@ -83,6 +83,401 @@ public:
 	DWORD m_dwTextColor[4];//字体颜色
 	String m_strFontID[4]; //字体ID
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//文字信息基础类
+class CXKnowTextInfo
+{
+public:
+	CXKnowTextInfo()
+	{
+		//设置默认字体ID
+		m_arrFontID[0] = CXKnowGobal::GetTextNormalFontID();
+		m_arrFontID[1] = CXKnowGobal::GetTextHoverFontID();
+		m_arrFontID[2] = CXKnowGobal::GetTextPressFontID();
+		m_arrFontID[3] = CXKnowGobal::GetTextDisabledFontID();
+		//设置默认字体颜色
+		m_arrTextColor[0] = CXKnowGobal::GetTextNormalColor();
+		m_arrTextColor[1] = CXKnowGobal::GetTextHoverColor();
+		m_arrTextColor[2] = CXKnowGobal::GetTextPressColor();
+		m_arrTextColor[3] = CXKnowGobal::GetTextDisabledColor();
+		//设置默认字体绘制样式
+		m_uFormatStyle = CXKnowGobal::GetTextFormatStyle();
+		m_bMultiLine = FALSE;
+		m_bVisible = TRUE;
+		m_iRowHeight = CXKnowGobal::GetTextRowHeight();
+	}
+
+	void SetText(String strText)
+	{
+		m_strText = strText;
+	}
+
+	void SetTextRowHeight(int iHeight)
+	{
+		m_iRowHeight = iHeight;
+	}
+	void SetTextVisible(BOOL bVisible)
+	{
+		m_bVisible = bVisible;
+	}
+
+	void SetTextNormalColor(DWORD dwTextNormalColor)
+	{
+		m_arrTextColor[0] = dwTextNormalColor;
+	}
+
+	void SetTextHoverColor(DWORD dwTextHoverColor)
+	{
+		m_arrTextColor[1] = dwTextHoverColor;
+	}
+
+	void SetTextPressColor(DWORD dwTextPressColor)
+	{
+		m_arrTextColor[2] = dwTextPressColor;
+	}
+
+	void SetTextDisabledColor(DWORD dwTextDisabledColor)
+	{
+		m_arrTextColor[3] = dwTextDisabledColor;
+	}
+
+	void SetTextNormalFontID(String strNormalFontID)
+	{
+		m_arrFontID[0] = strNormalFontID;
+	}
+
+	void SetTextHoverFontID(String strHoverFontID)
+	{
+		m_arrFontID[1] = strHoverFontID;
+	}
+
+	void SetTextPressFontID(String strPressFontID)
+	{
+		m_arrFontID[2] = strPressFontID;
+	}
+
+	void SetTextDisabledFontID(String strDisabledFontID)
+	{
+		m_arrFontID[3] = strDisabledFontID;
+	}
+
+	void SetTextRect(int iLeft, int iTop, int iWidth, int iHeight)
+	{
+		m_rcText.SetRect(iLeft, iTop, iLeft + iWidth, iTop + iHeight);
+	}
+
+	void SetTextFormatStyle(UINT uStyle)
+	{
+		m_uFormatStyle = uStyle;
+	}
+
+	void SetTextMultiLine(BOOL bMultiLine)
+	{
+		m_bMultiLine = bMultiLine;
+	}
+
+	String GetText()
+	{
+		return m_strText;
+	}
+
+	BOOL IsTextVisible()
+	{
+		return m_bVisible;
+	}
+
+	DWORD GetTextNormalColor()
+	{
+		return m_arrTextColor[0];
+	}
+
+	DWORD GetTextHoverColor()
+	{
+		return m_arrTextColor[1];
+	}
+
+	DWORD GetTextPressColor()
+	{
+		return m_arrTextColor[2];
+	}
+
+	DWORD GetTextDisabledColor()
+	{
+		return m_arrTextColor[3];
+	}
+
+	String GetTextNormalFontID()
+	{
+		return m_arrFontID[0];
+	}
+
+	String GetTextHoverFontID()
+	{
+		return m_arrFontID[1];
+	}
+
+	String GetTextPressFontID()
+	{
+		return m_arrFontID[2];
+	}
+
+	String GetTextDisabledFontID()
+	{
+		return m_arrFontID[3];
+	}
+
+	CRect GetTextRect()
+	{
+		return m_rcText;
+	}
+
+	UINT GetTextFormatStyle()
+	{
+		return m_uFormatStyle;
+	}
+
+	BOOL IsTextMultiLine()
+	{
+		return m_bMultiLine;
+	}
+private:
+	String m_arrFontID[4]; //字体ID
+	DWORD m_arrTextColor[4];//字体颜色
+	UINT  m_uFormatStyle; //文字绘制样式
+	BOOL m_bMultiLine;	//多行。简单起见，单行默认的绘制样式为DT_CENTER | DT_VCENTER | DT_SINGLELINE
+	BOOL m_bVisible;//是否可见
+	int m_iRowHeight;
+	String m_strText;	//文字内容
+	CRect m_rcText;	//文字绘制矩形框
+};
+
+//支持多文本框渲染信息
+class CXKnowTextExBase
+{
+public:
+	CXKnowTextExBase()
+	{
+		m_MultiTextInfoMap.clear();
+		
+	}
+	~CXKnowTextExBase()
+	{
+		map<String, CXKnowTextInfo*>::iterator iter;
+		for (iter = m_MultiTextInfoMap.begin(); iter != m_MultiTextInfoMap.end(); iter++)
+		{
+			if (NULL != iter->second)
+			{
+				delete iter->second;
+				iter->second = NULL;
+			}
+		}
+		m_MultiTextInfoMap.clear();
+	}
+	void SetText(String strID, String strText)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetText(strText);
+	}
+	
+	void SetRowHeight(String strID, int iHeight)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextRowHeight(iHeight);
+	}
+	
+	void SetTextVisible(String strID, BOOL bVisible)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextVisible(bVisible);
+	}
+	void SetTextNormalColor(String strID, DWORD dwTextNormalColor)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextNormalColor(dwTextNormalColor);
+	}
+
+	void SetTextHoverColor(String strID, DWORD dwTextHoverColor)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextHoverColor(dwTextHoverColor);
+	}
+
+	void SetTextPressColor(String strID, DWORD dwTextPressColor)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextPressColor(dwTextPressColor);
+	}
+
+	void SetTextDisabledColor(String strID, DWORD dwTextDisabledColor)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextDisabledColor(dwTextDisabledColor);
+	}
+
+	void SetTextNormalFontID(String strID, String strNormalFontID)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextNormalFontID(strNormalFontID);
+	}
+
+	void SetTextHoverFontID(String strID, String strHoverFontID)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextHoverFontID(strHoverFontID);
+	}
+
+	void SetTextPressFontID(String strID, String strPressFontID)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextPressFontID(strPressFontID);
+	}
+
+	void SetTextDisabledFontID(String strID, String strDisabledFontID)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextDisabledFontID(strDisabledFontID);
+	}
+
+	void SetTextRect(String strID, int iLeft, int iTop, int iWidth, int iHeight)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextRect(iLeft, iTop, iWidth, iHeight);
+	}
+
+	void SetTextFormatStyle(String strID, UINT uStyle)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextFormatStyle(uStyle);
+	}
+
+	void SetTextMultiLine(String strID, BOOL bMultiLine)
+	{
+		AddKeyToMap(strID);
+		m_MultiTextInfoMap[strID]->SetTextMultiLine(bMultiLine);
+	}
+
+	String GetText(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetText() : _T("");
+	}
+
+	BOOL IsTextVisible(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->IsTextVisible() : FALSE;
+	}
+
+	DWORD GetTextNormalColor(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextNormalColor() : CXKnowGobal::GetTextNormalColor();
+	}
+
+	DWORD GetTextHoverColor(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextHoverColor() : CXKnowGobal::GetTextHoverColor();
+	}
+
+	DWORD GetTextPressColor(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextPressColor() : CXKnowGobal::GetTextPressColor();
+	}
+
+	DWORD GetTextDisabledColor(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextDisabledColor() : CXKnowGobal::GetTextDisabledColor();
+	}
+
+	String GetTextNormalFontID(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextNormalFontID() : CXKnowGobal::GetTextNormalFontID();
+	}
+
+	String GetTextHoverFontID(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextHoverFontID() : CXKnowGobal::GetTextHoverFontID();
+	}
+
+	String GetTextPressFontID(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextPressFontID() : CXKnowGobal::GetTextPressFontID();
+	}
+
+	String GetTextDisabledFontID(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextDisabledFontID() : CXKnowGobal::GetTextDisabledFontID();
+	}
+
+	CRect GetTextRect(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextRect() : CRect(0, 0, 0, 0);
+	}
+
+	UINT GetTextFormatStyle(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextFormatStyle() : CXKnowGobal::GetTextFormatStyle();
+	}
+
+	BOOL IsTextMultiLine(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->IsTextMultiLine() : FALSE;
+	}
+
+	void DrawAllText(HDC hDC)
+	{
+		map<String, CXKnowTextInfo*>::iterator iter;
+		for (iter = m_MultiTextInfoMap.begin(); iter != m_MultiTextInfoMap.end(); iter++)
+		{
+			CXKnowTextInfo* pTextInfo = iter->second;
+			if ((NULL != pTextInfo) && (pTextInfo->IsTextVisible()))
+			{
+				//CXKnowRender::DrawText(hDC, iter->second->m_strText, iter->second->m_rcText, iter->second->m_dwTextColor[0], iter->second->m_strFontID[0], iter->second->m_uFormatStyle);
+			}
+		}
+	}
+private:
+	void AddKeyToMap(String strID)
+	{
+		if (m_MultiTextInfoMap[strID] == NULL)
+		{
+			m_MultiTextInfoMap[strID] = new CXKnowTextInfo();
+		}
+	}
+	BOOL IsKeyExists(String strID)
+	{
+		return m_MultiTextInfoMap[strID] != NULL;
+	}
+private:
+	map<String, CXKnowTextInfo*> m_MultiTextInfoMap;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class CXKnowMultiTextBase
 {

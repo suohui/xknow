@@ -74,37 +74,45 @@ public:
 		PathCombine(szImagePath, szExePath, _T("..\\img\\"));
 		return szImagePath;
 	}
-	static String GetNormalFontID()	//获取Normal字体
+	static String GetTextNormalFontID()	//获取Normal字体
 	{
 		return _T("default.font");
 	}
-	static String GetHoverFontID()	//获取Hover字体
+	static String GetTextHoverFontID()	//获取Hover字体
 	{
 		return _T("default.font");
 	}
-	static String GetPressFontID()	//获取Press字体
+	static String GetTextPressFontID()	//获取Press字体
 	{
 		return _T("default.font");
 	}
-	static String GetDisabledFontID()	//获取Disabled字体
+	static String GetTextDisabledFontID()	//获取Disabled字体
 	{
 		return _T("default.font");
 	}
-	static DWORD GetNormalTextColor()	//获取文字Normal色
+	static DWORD GetTextNormalColor()	//获取文字Normal色
 	{
 		return 0;
 	}
-	static DWORD GetHoverTextColor()	//获取文字Hover色
+	static DWORD GetTextHoverColor()	//获取文字Hover色
 	{
 		return 0;
 	}
-	static DWORD GetPressTextColor()	//获取文字Press色
+	static DWORD GetTextPressColor()	//获取文字Press色
 	{
 		return 0;
 	}
-	static DWORD GetDisabledTextColor()	//获取文字Disabled色
+	static DWORD GetTextDisabledColor()	//获取文字Disabled色
 	{
 		return 0;
+	}
+	static UINT GetTextFormatStyle()	//获取文本绘制样式
+	{
+		return DT_LEFT;
+	}
+	static int GetTextRowHeight()	//获取多行文本的行高
+	{
+		return 12;
 	}
 };
 
@@ -113,6 +121,15 @@ enum PNGTYPE
 	TwoInOne,
 	ThreeInOne,
 	FourInOne
+};
+enum TEXTFORMAT
+{
+	TF_LEFT,
+	TF_TOP,
+	TF_RIGHT,
+	TF_BOTTOM,
+	TF_HCENTER,
+	TF_VCENTER
 };
 
 struct XKnowImageInfo
@@ -272,7 +289,32 @@ public:
 		dc.ExtTextOut(0, 0, ETO_OPAQUE, &rcPaint, NULL, 0, NULL);
 	}
 
-	static void DrawText(HDC hdc, String strText, RECT& rcText, DWORD dwTextColor, String strFontID, UINT uStyle, BOOL bMultipLine = FALSE)
+	static void DrawSingleLineText(HDC hdc, String strText, RECT rcText, DWORD dwTextColor, String strFontID, TEXTFORMAT uFormat)
+	{
+		if (strText.empty() || ::IsRectEmpty(&rcText)) return;
+		CDCHandle dc(hdc);
+		dc.SetBkMode(TRANSPARENT);
+		dc.SetTextColor(RGB(GetBValue(dwTextColor), GetGValue(dwTextColor), GetRValue(dwTextColor)));
+		HFONT hOldFont = dc.SelectFont(CXKnowFontManager::Instance()->GetFont(strFontID));
+		SIZE szText;
+
+		CRect rcTextTmp = rcText;
+		if ((uFormat & TEXTFORMAT::TF_RIGHT) != 0)
+			rcTextTmp.left = rcText.left - szText.cx;
+		if ((uFormat & TEXTFORMAT:TF_BOTTOM) != 0)
+			rcTextTmp.left = rcText.left - szText.cx;
+		if ((uFormat & TEXTFORMAT::TF_RIGHT) != 0)
+			rcTextTmp.left = rcText.left - szText.cx;
+		if ((uFormat & TEXTFORMAT::TF_RIGHT) != 0)
+			rcTextTmp.left = rcText.left - szText.cx;
+		if ((uFormat & TEXTFORMAT::TF_RIGHT) != 0)
+			rcTextTmp.left = rcText.left - szText.cx;
+
+		//dc.TextOut()
+		dc.SelectFont(hOldFont);
+	}
+
+	static void DrawText(HDC hdc, String strText, RECT& rcText, DWORD dwTextColor, String strFontID, UINT uStyle, BOOL bMultipLine = FALSE, int iRowHeight = CXKnowGobal::GetTextRowHeight())
 	{
 		if (strText.empty()) return;
 		CDCHandle dc(hdc);
