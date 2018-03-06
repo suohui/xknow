@@ -1,4 +1,29 @@
 #pragma once
+
+enum PNGTYPE
+{
+	TwoInOne,
+	ThreeInOne,
+	FourInOne
+};
+enum TEXTFORMAT
+{
+	TF_LEFT,
+	TF_TOP,
+	TF_RIGHT,
+	TF_BOTTOM,
+	TF_HCENTER,
+	TF_VCENTER
+};
+
+struct XKnowImageInfo
+{
+	HBITMAP hBitmap;
+	int iWidth;
+	int iHeight;
+	BOOL bAlpha;
+};
+
 typedef std::map<String, HFONT> FONTMAP;
 class CXKnowFontManager
 {
@@ -106,9 +131,9 @@ public:
 	{
 		return 0;
 	}
-	static UINT GetTextFormatStyle()	//获取文本绘制样式
+	static TEXTFORMAT GetTextFormatStyle()	//获取文本绘制样式
 	{
-		return DT_LEFT;
+		return TEXTFORMAT::TF_LEFT;
 	}
 	static int GetTextRowHeight()	//获取多行文本的行高
 	{
@@ -116,29 +141,6 @@ public:
 	}
 };
 
-enum PNGTYPE
-{
-	TwoInOne,
-	ThreeInOne,
-	FourInOne
-};
-enum TEXTFORMAT
-{
-	TF_LEFT,
-	TF_TOP,
-	TF_RIGHT,
-	TF_BOTTOM,
-	TF_HCENTER,
-	TF_VCENTER
-};
-
-struct XKnowImageInfo
-{
-	HBITMAP hBitmap;
-	int iWidth;
-	int iHeight;
-	BOOL bAlpha;
-};
 class CXKnowRender
 {
 public:
@@ -291,27 +293,63 @@ public:
 
 	static void DrawSingleLineText(HDC hdc, String strText, RECT rcText, DWORD dwTextColor, String strFontID, TEXTFORMAT uFormat)
 	{
-		if (strText.empty() || ::IsRectEmpty(&rcText)) return;
+		CRect rcTextClient = rcText;
+		if (strText.empty() || rcTextClient.IsRectEmpty()) return;
 		CDCHandle dc(hdc);
 		dc.SetBkMode(TRANSPARENT);
 		dc.SetTextColor(RGB(GetBValue(dwTextColor), GetGValue(dwTextColor), GetRValue(dwTextColor)));
 		HFONT hOldFont = dc.SelectFont(CXKnowFontManager::Instance()->GetFont(strFontID));
-		SIZE szText;
+		SIZE szText = { 0, 0 };
+		::GetTextExtentPoint32(dc, strText.c_str(), strText.length(), &szText);
+		String strPaint = _T("");
+		if (szText.cx > rcTextClient.Width())	//文字太多，绘制不完，以...结束
+		{
+			String strEndEllipsis = _T("...");
+			SIZE szEndEllipsis = { 0, 0 };
+			::GetTextExtentPoint32(dc, strEndEllipsis.c_str(), strEndEllipsis.length(), &szEndEllipsis);
+			if (szEndEllipsis.cx < rcTextClient.Width()) //如果...也画不了，说明宽度太小了
+			{
+				int iStart = 0;
+				szText = { 0, 0 };
+				while (szText.cx < rcTextClient.Width() - szEndEllipsis.cx)
+				{
+					iStart++;
+					::GetTextExtentPoint32(dc, strText.c_str(), iStart, &szText);
+				}
+				if (szText.cx > rcTextClient.Width() - szEndEllipsis.cx)
+				{
+					iStart--;
+				}
+				strPaint = strText.substr(0, iStart) + strEndEllipsis;
+			}
+		}
+		else
+			strPaint = strText;
 
-		CRect rcTextTmp = rcText;
+		int iLeft = rcTextClient.left;
+		int iTop = rcTextClient.top;
 		if ((uFormat & TEXTFORMAT::TF_RIGHT) != 0)
-			rcTextTmp.left = rcText.left - szText.cx;
-		if ((uFormat & TEXTFORMAT:TF_BOTTOM) != 0)
-			rcTextTmp.left = rcText.left - szText.cx;
-		if ((uFormat & TEXTFORMAT::TF_RIGHT) != 0)
-			rcTextTmp.left = rcText.left - szText.cx;
-		if ((uFormat & TEXTFORMAT::TF_RIGHT) != 0)
-			rcTextTmp.left = rcText.left - szText.cx;
-		if ((uFormat & TEXTFORMAT::TF_RIGHT) != 0)
-			rcTextTmp.left = rcText.left - szText.cx;
-
-		//dc.TextOut()
+			iLeft = rcTextClient.left - szText.cx;
+		if ((uFormat & TEXTFORMAT::TF_BOTTOM) != 0)
+			iTop = rcTextClient.bottom - szText.cy;
+		if ((uFormat & TEXTFORMAT::TF_HCENTER) != 0)
+			iLeft = (rcTextClient.Width() - szText.cx) / 2;
+		if ((uFormat & TEXTFORMAT::TF_VCENTER) != 0)
+			iTop = (rcTextClient.Height() - szText.cy) / 2;
+		dc.TextOut(iLeft, iTop, strPaint.c_str(), -1);
 		dc.SelectFont(hOldFont);
+	}
+
+	static void DrawText1(HDC hdc, String strText, RECT& rcText, DWORD dwTextColor, String strFontID, TEXTFORMAT uFormat, BOOL bMultipLine, int iRowHeight)
+	{
+		if (bMultipLine)
+		{
+
+		}
+		else
+		{
+			DrawSingleLineText(hdc, strText, rcText, dwTextColor, strFontID, uFormat);
+		}
 	}
 
 	static void DrawText(HDC hdc, String strText, RECT& rcText, DWORD dwTextColor, String strFontID, UINT uStyle, BOOL bMultipLine = FALSE, int iRowHeight = CXKnowGobal::GetTextRowHeight())

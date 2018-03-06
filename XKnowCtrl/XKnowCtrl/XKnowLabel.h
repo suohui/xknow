@@ -33,7 +33,7 @@ protected:
 //支持多Label
 class CXKnowLabelEx : public CWindowImpl<CXKnowLabelEx, CStatic>,
 	public CXKnowControlBase<CXKnowLabelEx>,
-	public CXKnowTextExBase
+	public CXKnowTextExBase<CXKnowLabelEx>
 
 {
 public:
@@ -57,6 +57,7 @@ protected:
 		CMemoryDC memDC(dc, rcClient);
 		//画背景、画文字
 		DrawControlBkgnd(memDC, rcClient);
+		DrawAllText(memDC);
 		//CXKnowRender::DrawText(memDC, m_strText, rcClient, m_dwTextColor[0], m_strFontID[0], m_uFormatStyle, true);
 		return 0;
 	}

@@ -124,6 +124,16 @@ public:
 		m_AboutBtn.SetText(L"收益");
 		m_AboutBtn.EnableWindow(FALSE);
 		m_AboutBtn.SetTextRect(0, 42, 42, 18);
+
+		m_lblTest2.SubclassWindow(GetDlgItem(IDC_SIMPLETEST).m_hWnd);
+		m_lblTest2.SetBkgndBitmap(GetBkgndHBitmap());
+		
+		m_lblTest2.MoveWindow(300, 300, 120, 40);
+		m_lblTest2.SetText(L"haha", L"随便玩一下");
+		m_lblTest2.SetTextRect(L"haha", 0, 0, 30, 20);
+
+		m_lblTest2.SetText(L"haha2", L"随便玩一下");
+		m_lblTest2.SetTextRect(L"haha2", 0, 20, 120, 20);
 	}
 	CXKnowButton m_MenuBtn;
 	CXKnowButton m_MinBtn;
@@ -131,6 +141,7 @@ public:
 	CXKnowButton m_RebootBtn;
 	CXKnowButton m_AboutBtn;
 	CXKnowLabel m_lblTest;
+	CXKnowLabelEx m_lblTest2;
 
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -154,6 +165,7 @@ public:
 		//CAboutDlg dlg;
 		//dlg.DoModal();
 		//m_lblTest.SetBkgndColor(RGB(122, 240, 153));
+		m_lblTest2.SetText(L"haha2", L"balabala随便玩一下");
 		return 0;
 	}
 	LRESULT OnAppAbout2(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)

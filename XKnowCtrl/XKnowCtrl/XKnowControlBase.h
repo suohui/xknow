@@ -182,7 +182,7 @@ public:
 		m_rcText.SetRect(iLeft, iTop, iLeft + iWidth, iTop + iHeight);
 	}
 
-	void SetTextFormatStyle(UINT uStyle)
+	void SetTextFormatStyle(TEXTFORMAT uStyle)
 	{
 		m_uFormatStyle = uStyle;
 	}
@@ -195,6 +195,11 @@ public:
 	String GetText()
 	{
 		return m_strText;
+	}
+
+	int GetTextRowHeight()
+	{
+		return m_iRowHeight;
 	}
 
 	BOOL IsTextVisible()
@@ -247,7 +252,7 @@ public:
 		return m_rcText;
 	}
 
-	UINT GetTextFormatStyle()
+	TEXTFORMAT GetTextFormatStyle()
 	{
 		return m_uFormatStyle;
 	}
@@ -259,7 +264,7 @@ public:
 private:
 	String m_arrFontID[4]; //字体ID
 	DWORD m_arrTextColor[4];//字体颜色
-	UINT  m_uFormatStyle; //文字绘制样式
+	TEXTFORMAT  m_uFormatStyle; //文字绘制样式
 	BOOL m_bMultiLine;	//多行。简单起见，单行默认的绘制样式为DT_CENTER | DT_VCENTER | DT_SINGLELINE
 	BOOL m_bVisible;//是否可见
 	int m_iRowHeight;
@@ -268,6 +273,7 @@ private:
 };
 
 //支持多文本框渲染信息
+template <class T>
 class CXKnowTextExBase
 {
 public:
@@ -293,88 +299,121 @@ public:
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetText(strText);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 	
-	void SetRowHeight(String strID, int iHeight)
+	void SetTextRowHeight(String strID, int iHeight)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextRowHeight(iHeight);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 	
 	void SetTextVisible(String strID, BOOL bVisible)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextVisible(bVisible);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 	void SetTextNormalColor(String strID, DWORD dwTextNormalColor)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextNormalColor(dwTextNormalColor);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	void SetTextHoverColor(String strID, DWORD dwTextHoverColor)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextHoverColor(dwTextHoverColor);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	void SetTextPressColor(String strID, DWORD dwTextPressColor)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextPressColor(dwTextPressColor);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	void SetTextDisabledColor(String strID, DWORD dwTextDisabledColor)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextDisabledColor(dwTextDisabledColor);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	void SetTextNormalFontID(String strID, String strNormalFontID)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextNormalFontID(strNormalFontID);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	void SetTextHoverFontID(String strID, String strHoverFontID)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextHoverFontID(strHoverFontID);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	void SetTextPressFontID(String strID, String strPressFontID)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextPressFontID(strPressFontID);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	void SetTextDisabledFontID(String strID, String strDisabledFontID)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextDisabledFontID(strDisabledFontID);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	void SetTextRect(String strID, int iLeft, int iTop, int iWidth, int iHeight)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextRect(iLeft, iTop, iWidth, iHeight);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
-	void SetTextFormatStyle(String strID, UINT uStyle)
+	void SetTextFormatStyle(String strID, TEXTFORMAT uStyle)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextFormatStyle(uStyle);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	void SetTextMultiLine(String strID, BOOL bMultiLine)
 	{
 		AddKeyToMap(strID);
 		m_MultiTextInfoMap[strID]->SetTextMultiLine(bMultiLine);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
 	}
 
 	String GetText(String strID)
 	{
 		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetText() : _T("");
+	}
+
+	int GetTextRowHeight(String strID)
+	{
+		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextRowHeight() : CXKnowGobal::GetTextRowHeight();
 	}
 
 	BOOL IsTextVisible(String strID)
@@ -445,6 +484,11 @@ public:
 			CXKnowTextInfo* pTextInfo = iter->second;
 			if ((NULL != pTextInfo) && (pTextInfo->IsTextVisible()))
 			{
+				CXKnowRender::DrawText1(hDC, pTextInfo->GetText(), pTextInfo->GetTextRect(), pTextInfo->GetTextNormalColor(), pTextInfo->GetTextNormalFontID(), pTextInfo->GetTextFormatStyle(), pTextInfo->IsTextMultiLine(), pTextInfo->GetTextRowHeight());
+
+
+
+
 				//CXKnowRender::DrawText(hDC, iter->second->m_strText, iter->second->m_rcText, iter->second->m_dwTextColor[0], iter->second->m_strFontID[0], iter->second->m_uFormatStyle);
 			}
 		}
@@ -463,86 +507,6 @@ private:
 	}
 private:
 	map<String, CXKnowTextInfo*> m_MultiTextInfoMap;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class CXKnowMultiTextBase
-{
-public:
-	CXKnowMultiTextBase()
-	{
-		m_MultiTextInfoMap.clear();
-	}
-	~CXKnowMultiTextBase()
-	{
-		map<String, CXKnowTextBase*>::iterator iter;
-		for (iter = m_MultiTextInfoMap.begin(); iter != m_MultiTextInfoMap.end(); iter++)
-		{
-			if (NULL != iter->second)
-			{
-				delete iter->second;
-				iter->second = NULL;
-			}
-		}
-		m_MultiTextInfoMap.clear();
-	}
-
-	void SetText(String strID, String strText)
-	{
-		m_MultiTextInfoMap[strID]->SetText(strText);
-	}
-
-	void SetTextColor(String strID, DWORD dwTextNormalColor)
-	{
-		m_MultiTextInfoMap[strID]->SetTextColor(dwTextNormalColor);
-	}
-
-	void SetTextFontID(String strID, String strNormal)
-	{
-		m_MultiTextInfoMap[strID]->SetTextFontID(strNormal);
-	}
-
-	void SetTextRect(String strID, int iLeft, int iTop, int iWidth, int iHeight)
-	{
-		m_MultiTextInfoMap[strID]->SetTextRect(iLeft, iTop, iWidth, iHeight);
-	}
-
-	void SetTextFormatStyle(String strID, UINT uStyle)
-	{
-		m_MultiTextInfoMap[strID]->SetTextFormatStyle(uStyle);
-	}
-
-	void SetTextMultiLine(String strID, BOOL bMultiLine)
-	{
-		m_MultiTextInfoMap[strID]->SetTextMultiLine(bMultiLine);
-	}
-
-	void DrawTextMap(HDC hDC)
-	{
-		map<String, CXKnowTextBase*>::iterator iter;
-		for (iter = m_MultiTextInfoMap.begin(); iter != m_MultiTextInfoMap.end(); iter++)
-		{
-			if (NULL != iter->second)
-			{
-				CXKnowRender::DrawText(hDC, iter->second->m_strText, iter->second->m_rcText, iter->second->m_dwTextColor[0], iter->second->m_strFontID[0], iter->second->m_uFormatStyle);
-			}
-		}
-	}
-private:
-	map<String, CXKnowTextBase*> m_MultiTextInfoMap;
 };
 
 //Icon图标信息基础类，单一图片信息，例如：按钮上的标识图标、窗体LOGO，
