@@ -9,7 +9,7 @@
 //4、画按扭
 //5、画动画
 //6、画Label
-#include <vector>
+
 class CMainDlg : public CDialogImpl<CMainDlg>, public CUpdateUI<CMainDlg>,
 		public CMessageFilter, public CIdleHandler,
 		public CXKnowDlgBase<CMainDlg>
@@ -53,92 +53,12 @@ public:
 //	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
-	String GetHtmlFontID(String strStyleText, String strTag)
-	{
-		String strRet = _T("");
-		size_t iFound = strStyleText.find(strTag);
-		if (iFound != String::npos)
-		{
-			size_t iQuotesLeft = strStyleText.find(_T('\"'), iFound);
-			if (iQuotesLeft != String::npos)
-			{
-				size_t iQuotesRight = strStyleText.find(_T('\"'), iQuotesLeft + 1);
-				if (iQuotesRight != String::npos)
-				{
-					strRet = strStyleText.substr(iQuotesLeft + 1, iQuotesRight - iQuotesLeft - 1);
-				}
-			}
-		}
-		return strRet;
-	}
+	
 
 	void InitDialog()
 	{
 		String strLL = L" color = \"iesfe\" fontid=\"1\"";
-		String font = GetHtmlFontID(strLL, L"fontid");
-		String color = GetHtmlFontID(strLL, L"color");
 		String strText = L"<html fontid=\"1\" a>则返回首次匹</html>配的开<html>始位</html>如果找到";
-
-		struct TextInfo
-		{
-			String strText;
-			String strFontID;
-			DWORD dwColor;
-			int iWidth;
-			int iHeight;
-		};
-
-		std::vector<TextInfo*> vec;
-		size_t iStart = 0;
-		String strTmp = strText;
-		do
-		{
-			size_t nTagStartLeft = strTmp.find(_T("<html"));
-			if (nTagStartLeft == String::npos)
-			{	//最后一截
-				//添加正常的
-				TextInfo *pNormalTextInfo = new TextInfo;
-				pNormalTextInfo->strText = strTmp.substr(iStart);
-
-				vec.push_back(pNormalTextInfo);
-				break;
-			}
-			else
-			{
-				size_t nTagStartRight = strTmp.find(_T(">"));
-				size_t nTagEnd = strTmp.find(_T("</html>"), nTagStartRight);
-				if ((nTagStartRight == String::npos) || (nTagEnd == String::npos))
-				{
-					break;
-				}
-				//添加正常的
-				String strNormalText = strTmp.substr(iStart, nTagStartLeft);
-				if (!strNormalText.empty())
-				{
-					TextInfo *pNormalTextInfo = new TextInfo;
-					pNormalTextInfo->strText = strNormalText;
-					vec.push_back(pNormalTextInfo);
-				}
-				//添加html修饰的
-				String strHtmlText = strTmp.substr(nTagStartRight + 1, nTagEnd - nTagStartRight - 1);
-				if (!strHtmlText.empty())
-				{
-					String strStyle = strTmp.substr(nTagStartLeft + 6, nTagStartRight - nTagStartLeft - 6);
-					String strHtmlFontID = GetHtmlFontID(strStyle, _T("fontid"));
-
-					TextInfo *pHtmlTextInfo = new TextInfo;
-					pHtmlTextInfo->strText = strHtmlText;
-					pHtmlTextInfo->strFontID = strHtmlFontID.empty() ? _T("参数") : strHtmlFontID;
-					vec.push_back(pHtmlTextInfo);
-					strTmp = strTmp.substr(nTagEnd + 7);
-				}
-			}
-		} while (!strTmp.empty());
-
-
-
-
-
 		//String strTmp = strText.substr(0, nTagStartLeft);
 
 		//size_t nTagStartRight = strText.find(_T(">"));

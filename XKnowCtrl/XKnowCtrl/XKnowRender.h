@@ -132,6 +132,15 @@ public:
 	}
 };
 
+struct TextInfo
+{
+	String strText;
+	String strFontID;
+	DWORD dwColor;
+	int iWidth;
+	int iHeight;
+};
+
 class CXKnowRender
 {
 public:
@@ -333,6 +342,37 @@ public:
 	//"<html fontid='' color=''>简单的绘制，不支持嵌套</html>"
 	static void DrawHtmlSingleLineText(HDC hdc, String strText, RECT rcText, DWORD dwTextColor, String strFontID, UINT uFormat)
 	{
+		std::vector<TextInfo*> vecTextInfo;
+		vecTextInfo.clear();
+		int iTotalWidth = 0;
+		int iMaxHeight = 0;
+		GetHtmlStringExtend(hdc, strText, dwTextColor, strFontID, vecTextInfo, iTotalWidth, iMaxHeight);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		CDCHandle dc(hdc);
 		dc.SetBkMode(TRANSPARENT);
 		dc.SetTextColor(RGB(GetBValue(dwTextColor), GetGValue(dwTextColor), GetRValue(dwTextColor)));
@@ -495,6 +535,94 @@ public:
 			dc.DrawText(strText.c_str(), -1, &rcText, uStyle);
 		}
 		dc.SelectFont(hOldFont);
+	}
+
+	static String GetHtmlTagValue(String strStyleText, String strTag)
+	{
+		String strRet = _T("");
+		size_t iFound = strStyleText.find(strTag);
+		if (iFound != String::npos)
+		{
+			size_t iQuotesLeft = strStyleText.find(_T('\"'), iFound);
+			if (iQuotesLeft != String::npos)
+			{
+				size_t iQuotesRight = strStyleText.find(_T('\"'), iQuotesLeft + 1);
+				if (iQuotesRight != String::npos)
+				{
+					strRet = strStyleText.substr(iQuotesLeft + 1, iQuotesRight - iQuotesLeft - 1);
+				}
+			}
+		}
+		return strRet;
+	}
+
+	static TextInfo* GetTextInfo(HDC hdc, String strText, DWORD dwColor, String strFontID)
+	{
+		CDCHandle dc(hdc);
+		HFONT hOldFont = dc.SelectFont(CXKnowFontManager::Instance()->GetFont(strFontID));
+		SIZE szText = { 0, 0 };
+		::GetTextExtentPoint32(dc, strText.c_str(), strText.length(), &szText);
+		dc.SelectFont(hOldFont);
+		TextInfo *pTextInfo = new TextInfo;
+		pTextInfo->strText = strText;
+		pTextInfo->strFontID = strFontID;
+		pTextInfo->dwColor = dwColor;
+		pTextInfo->iWidth = szText.cx;
+		pTextInfo->iHeight = szText.cy;
+		return pTextInfo;
+	}
+	static void GetHtmlStringExtend(HDC hdc, String strText, DWORD dwDefaultColor, String strDefaultFontID, vector<TextInfo *> &vecTextInfoRet, int &iTotalWidth, int &iMaxHeight)
+	{
+		iTotalWidth = 0;
+		iMaxHeight = 0;
+		size_t iStart = 0;
+		String strTmp = strText;
+		do
+		{
+			size_t nTagStartLeft = strTmp.find(_T("<html"));
+			if (nTagStartLeft == String::npos)
+			{
+				//添加正常的//最后一截
+				TextInfo *pNormalTextInfo = GetTextInfo(hdc, strTmp.substr(iStart), dwDefaultColor, strDefaultFontID);
+				iTotalWidth += pNormalTextInfo->iWidth;
+				iMaxHeight = max(iMaxHeight, pNormalTextInfo->iHeight);
+				vecTextInfoRet.push_back(pNormalTextInfo);
+				break;
+			}
+			else
+			{
+				size_t nTagStartRight = strTmp.find(_T(">"));
+				size_t nTagEnd = strTmp.find(_T("</html>"), nTagStartRight);
+				if ((nTagStartRight == String::npos) || (nTagEnd == String::npos))
+				{
+					break;
+				}
+				//添加正常的
+				String strNormalText = strTmp.substr(iStart, nTagStartLeft);
+				if (!strNormalText.empty())
+				{
+					TextInfo *pNormalTextInfo = GetTextInfo(hdc, strNormalText, dwDefaultColor, strDefaultFontID);
+					iTotalWidth += pNormalTextInfo->iWidth;
+					iMaxHeight = max(iMaxHeight, pNormalTextInfo->iHeight);
+					vecTextInfoRet.push_back(pNormalTextInfo);
+				}
+				//添加html修饰的
+				String strHtmlText = strTmp.substr(nTagStartRight + 1, nTagEnd - nTagStartRight - 1);
+				if (!strHtmlText.empty())
+				{
+					String strStyle = strTmp.substr(nTagStartLeft + 6, nTagStartRight - nTagStartLeft - 6);
+					String strHtmlFontID = GetHtmlTagValue(strStyle, _T("fontid"));
+					String strHtmlColor = GetHtmlTagValue(strStyle, _T("color"));
+					DWORD dwColor = strHtmlColor.empty() ? dwDefaultColor : _ttol(strHtmlColor.c_str());
+					String strFont = strHtmlFontID.empty() ? strDefaultFontID : strHtmlFontID;
+					TextInfo *pHtmlTextInfo = GetTextInfo(hdc, strHtmlText, dwColor, strFont);
+					iTotalWidth += pHtmlTextInfo->iWidth;
+					iMaxHeight = max(iMaxHeight, pHtmlTextInfo->iHeight);
+					vecTextInfoRet.push_back(pHtmlTextInfo);
+					strTmp = strTmp.substr(nTagEnd + 7);
+				}
+			}
+		} while (!strTmp.empty());
 	}
 };
 

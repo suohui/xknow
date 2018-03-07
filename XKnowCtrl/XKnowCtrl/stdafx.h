@@ -18,8 +18,9 @@
 #include <atlmisc.h>    //http://blog.csdn.net/immortal_mcl/article/details/5920138
 extern CAppModule _Module;
 
-#include <map>
 #include <string>
+#include <vector>
+#include <map>
 using namespace std;
 #ifdef UNICODE
 #define String  std::wstring
