@@ -120,6 +120,7 @@ public:
 		m_uFormatStyle = CXKnowGobal::GetTextFormatStyle();
 		m_bMultiLine = FALSE;
 		m_bVisible = TRUE;
+		m_bHtmlTagEnable = FALSE;
 		m_iRowHeight = CXKnowGobal::GetTextRowHeight();
 	}
 
@@ -127,7 +128,10 @@ public:
 	{
 		m_strText = strText;
 	}
-
+	void EnableHtmlTag(BOOL bTagEnable)
+	{
+		m_bHtmlTagEnable = bTagEnable;
+	}
 	void SetTextRowHeight(int iHeight)
 	{
 		m_iRowHeight = iHeight;
@@ -182,7 +186,7 @@ public:
 		m_rcText.SetRect(iLeft, iTop, iLeft + iWidth, iTop + iHeight);
 	}
 
-	void SetTextFormatStyle(TEXTFORMAT uStyle)
+	void SetTextFormatStyle(UINT uStyle)
 	{
 		m_uFormatStyle = uStyle;
 	}
@@ -195,6 +199,11 @@ public:
 	String GetText()
 	{
 		return m_strText;
+	}
+
+	BOOL IsHtmlTagEnable()
+	{
+		return m_bHtmlTagEnable;
 	}
 
 	int GetTextRowHeight()
@@ -252,7 +261,7 @@ public:
 		return m_rcText;
 	}
 
-	TEXTFORMAT GetTextFormatStyle()
+	UINT GetTextFormatStyle()
 	{
 		return m_uFormatStyle;
 	}
@@ -261,12 +270,42 @@ public:
 	{
 		return m_bMultiLine;
 	}
+
+	DWORD GetTextStateColor(int iState)
+	{
+		switch (iState)
+		{
+		case 1:
+			return GetTextHoverColor();
+		case 2:
+			return GetTextPressColor();
+		case 3:
+			return GetTextDisabledColor();
+		default:
+			return GetTextNormalColor();
+		}
+	}
+	String GetTextStateFontID(int iState)
+	{
+		switch (iState)
+		{
+		case 1:
+			return GetTextHoverFontID();
+		case 2:
+			return GetTextPressFontID();
+		case 3:
+			return GetTextDisabledFontID();
+		default:
+			return GetTextNormalFontID();
+		}
+	}
 private:
 	String m_arrFontID[4]; //字体ID
 	DWORD m_arrTextColor[4];//字体颜色
-	TEXTFORMAT  m_uFormatStyle; //文字绘制样式
+	UINT  m_uFormatStyle; //文字绘制样式
 	BOOL m_bMultiLine;	//多行。简单起见，单行默认的绘制样式为DT_CENTER | DT_VCENTER | DT_SINGLELINE
 	BOOL m_bVisible;//是否可见
+	BOOL m_bHtmlTagEnable;//支持THML标签绘制
 	int m_iRowHeight;
 	String m_strText;	//文字内容
 	CRect m_rcText;	//文字绘制矩形框
@@ -295,210 +334,260 @@ public:
 		}
 		m_MultiTextInfoMap.clear();
 	}
-	void SetText(String strID, String strText)
+	void SetText(String strText, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetText(strText);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetText(strText);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
+	}
+
+	void EnableHtmlTag(BOOL bTagEnable, String strID = _T(""))
+	{
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->EnableHtmlTag(bTagEnable);
+		T* pThis = static_cast<T *>(this);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 	
-	void SetTextRowHeight(String strID, int iHeight)
+	void SetTextRowHeight(int iHeight, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextRowHeight(iHeight);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextRowHeight(iHeight);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 	
-	void SetTextVisible(String strID, BOOL bVisible)
+	void SetTextVisible(BOOL bVisible, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextVisible(bVisible);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextVisible(bVisible);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
-	void SetTextNormalColor(String strID, DWORD dwTextNormalColor)
+	void SetTextNormalColor(DWORD dwTextNormalColor, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextNormalColor(dwTextNormalColor);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextNormalColor(dwTextNormalColor);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextHoverColor(String strID, DWORD dwTextHoverColor)
+	void SetTextHoverColor(DWORD dwTextHoverColor, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextHoverColor(dwTextHoverColor);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextHoverColor(dwTextHoverColor);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextPressColor(String strID, DWORD dwTextPressColor)
+	void SetTextPressColor(DWORD dwTextPressColor, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextPressColor(dwTextPressColor);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextPressColor(dwTextPressColor);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextDisabledColor(String strID, DWORD dwTextDisabledColor)
+	void SetTextDisabledColor(DWORD dwTextDisabledColor, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextDisabledColor(dwTextDisabledColor);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextDisabledColor(dwTextDisabledColor);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextNormalFontID(String strID, String strNormalFontID)
+	void SetTextNormalFontID(String strNormalFontID, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextNormalFontID(strNormalFontID);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextNormalFontID(strNormalFontID);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextHoverFontID(String strID, String strHoverFontID)
+	void SetTextHoverFontID(String strHoverFontID, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextHoverFontID(strHoverFontID);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextHoverFontID(strHoverFontID);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextPressFontID(String strID, String strPressFontID)
+	void SetTextPressFontID(String strPressFontID, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextPressFontID(strPressFontID);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextPressFontID(strPressFontID);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextDisabledFontID(String strID, String strDisabledFontID)
+	void SetTextDisabledFontID(String strDisabledFontID, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextDisabledFontID(strDisabledFontID);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextDisabledFontID(strDisabledFontID);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextRect(String strID, int iLeft, int iTop, int iWidth, int iHeight)
+	void SetTextRect(int iLeft, int iTop, int iWidth, int iHeight, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextRect(iLeft, iTop, iWidth, iHeight);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextRect(iLeft, iTop, iWidth, iHeight);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextFormatStyle(String strID, TEXTFORMAT uStyle)
+	void SetTextFormatStyle(UINT uStyle, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextFormatStyle(uStyle);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextFormatStyle(uStyle);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	void SetTextMultiLine(String strID, BOOL bMultiLine)
+	void SetTextMultiLine(BOOL bMultiLine, String strID = _T(""))
 	{
-		AddKeyToMap(strID);
-		m_MultiTextInfoMap[strID]->SetTextMultiLine(bMultiLine);
+		String strNewID = ResetTextID(strID);
+		AddKeyToMap(strNewID);
+		m_MultiTextInfoMap[strNewID]->SetTextMultiLine(bMultiLine);
 		T* pThis = static_cast<T *>(this);
-		::InvalidateRect(pThis->m_hWnd, GetTextRect(strID), TRUE);
+		::InvalidateRect(pThis->m_hWnd, GetTextRect(strNewID), TRUE);
 	}
 
-	String GetText(String strID)
+	String GetText(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetText() : _T("");
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetText() : _T("");
 	}
 
-	int GetTextRowHeight(String strID)
+	BOOL IsHtmlTagEnable(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextRowHeight() : CXKnowGobal::GetTextRowHeight();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->IsHtmlTagEnable() : FALSE;
 	}
 
-	BOOL IsTextVisible(String strID)
+	int GetTextRowHeight(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->IsTextVisible() : FALSE;
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextRowHeight() : CXKnowGobal::GetTextRowHeight();
 	}
 
-	DWORD GetTextNormalColor(String strID)
+	BOOL IsTextVisible(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextNormalColor() : CXKnowGobal::GetTextNormalColor();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->IsTextVisible() : TRUE;
 	}
 
-	DWORD GetTextHoverColor(String strID)
+	DWORD GetTextNormalColor(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextHoverColor() : CXKnowGobal::GetTextHoverColor();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextNormalColor() : CXKnowGobal::GetTextNormalColor();
 	}
 
-	DWORD GetTextPressColor(String strID)
+	DWORD GetTextHoverColor(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextPressColor() : CXKnowGobal::GetTextPressColor();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextHoverColor() : CXKnowGobal::GetTextHoverColor();
 	}
 
-	DWORD GetTextDisabledColor(String strID)
+	DWORD GetTextPressColor(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextDisabledColor() : CXKnowGobal::GetTextDisabledColor();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextPressColor() : CXKnowGobal::GetTextPressColor();
 	}
 
-	String GetTextNormalFontID(String strID)
+	DWORD GetTextDisabledColor(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextNormalFontID() : CXKnowGobal::GetTextNormalFontID();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextDisabledColor() : CXKnowGobal::GetTextDisabledColor();
 	}
 
-	String GetTextHoverFontID(String strID)
+	String GetTextNormalFontID(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextHoverFontID() : CXKnowGobal::GetTextHoverFontID();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextNormalFontID() : CXKnowGobal::GetTextNormalFontID();
 	}
 
-	String GetTextPressFontID(String strID)
+	String GetTextHoverFontID(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextPressFontID() : CXKnowGobal::GetTextPressFontID();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextHoverFontID() : CXKnowGobal::GetTextHoverFontID();
 	}
 
-	String GetTextDisabledFontID(String strID)
+	String GetTextPressFontID(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextDisabledFontID() : CXKnowGobal::GetTextDisabledFontID();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextPressFontID() : CXKnowGobal::GetTextPressFontID();
 	}
 
-	CRect GetTextRect(String strID)
+	String GetTextDisabledFontID(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextRect() : CRect(0, 0, 0, 0);
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextDisabledFontID() : CXKnowGobal::GetTextDisabledFontID();
 	}
 
-	UINT GetTextFormatStyle(String strID)
+	CRect GetTextRect(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->GetTextFormatStyle() : CXKnowGobal::GetTextFormatStyle();
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextRect() : CRect(0, 0, 0, 0);
 	}
 
-	BOOL IsTextMultiLine(String strID)
+	UINT GetTextFormatStyle(String strID = _T(""))
 	{
-		return IsKeyExists(strID) ? m_MultiTextInfoMap[strID]->IsTextMultiLine() : FALSE;
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->GetTextFormatStyle() : CXKnowGobal::GetTextFormatStyle();
 	}
 
-	void DrawAllText(HDC hDC)
+	BOOL IsTextMultiLine(String strID = _T(""))
+	{
+		String strNewID = ResetTextID(strID);
+		return IsKeyExists(strNewID) ? m_MultiTextInfoMap[strNewID]->IsTextMultiLine() : FALSE;
+	}
+
+	void DrawAllText(HDC hDC, int iState = 0)
 	{
 		map<String, CXKnowTextInfo*>::iterator iter;
 		for (iter = m_MultiTextInfoMap.begin(); iter != m_MultiTextInfoMap.end(); iter++)
 		{
 			CXKnowTextInfo* pTextInfo = iter->second;
-			if ((NULL != pTextInfo) && (pTextInfo->IsTextVisible()))
+			if ((NULL != pTextInfo) && (pTextInfo->IsTextVisible()) && !pTextInfo->GetText().empty() && !pTextInfo->GetTextRect().IsRectEmpty())
 			{
-				CXKnowRender::DrawText1(hDC, pTextInfo->GetText(), pTextInfo->GetTextRect(), pTextInfo->GetTextNormalColor(), pTextInfo->GetTextNormalFontID(), pTextInfo->GetTextFormatStyle(), pTextInfo->IsTextMultiLine(), pTextInfo->GetTextRowHeight());
+				if (pTextInfo->IsHtmlTagEnable())
+				{
 
-
-
-
-				//CXKnowRender::DrawText(hDC, iter->second->m_strText, iter->second->m_rcText, iter->second->m_dwTextColor[0], iter->second->m_strFontID[0], iter->second->m_uFormatStyle);
+				}
+				else
+				{
+					CXKnowRender::DrawText1(hDC, pTextInfo->GetText(), pTextInfo->GetTextRect(), pTextInfo->GetTextStateColor(iState), pTextInfo->GetTextStateFontID(iState), pTextInfo->GetTextFormatStyle(), pTextInfo->IsTextMultiLine(), pTextInfo->GetTextRowHeight());
+				}
 			}
 		}
 	}
 private:
+	String ResetTextID(String strID)
+	{
+		return strID.empty() ? _T("ID.Text.Default") : strID;
+	}
 	void AddKeyToMap(String strID)
 	{
-		if (m_MultiTextInfoMap[strID] == NULL)
+		String strNewID = ResetTextID(strID);
+		if (m_MultiTextInfoMap[strNewID] == NULL)
 		{
-			m_MultiTextInfoMap[strID] = new CXKnowTextInfo();
+			m_MultiTextInfoMap[strNewID] = new CXKnowTextInfo();
 		}
 	}
 	BOOL IsKeyExists(String strID)
