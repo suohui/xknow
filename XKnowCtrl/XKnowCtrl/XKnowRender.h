@@ -330,6 +330,7 @@ public:
 		dc.SelectFont(hOldFont);
 	}
 
+	//"<html fontid='' color=''>简单的绘制，不支持嵌套</html>"
 	static void DrawHtmlSingleLineText(HDC hdc, String strText, RECT rcText, DWORD dwTextColor, String strFontID, UINT uFormat)
 	{
 		CDCHandle dc(hdc);
