@@ -30,7 +30,7 @@ protected:
 			BOOL bItalic;
 		} fts[] = {
 			{_T("default.font"), 12, FALSE, FALSE, FALSE},
-			{_T("default.font13"), 13, FALSE, FALSE, FALSE}
+			{_T("default.font13"), 15, FALSE, FALSE, FALSE}
 		};
 
 		LOGFONT m_lf;
@@ -283,14 +283,14 @@ public:
 		}
 		memDC.SelectBitmap(hOldBmp);
 	}
-
+	//绘制颜色
 	static void DrawColor(HDC hdc, CRect &rcPaint, DWORD dwColor)
 	{
 		CDCHandle dc(hdc);
 		dc.SetBkColor(RGB(GetBValue(dwColor), GetGValue(dwColor), GetRValue(dwColor)));
 		dc.ExtTextOut(0, 0, ETO_OPAQUE, &rcPaint, NULL, 0, NULL);
 	}
-
+	//绘制单行文本
 	static void DrawSingleLineText(HDC hdc, String strText, RECT rcText, DWORD dwTextColor, String strFontID, UINT uFormat)
 	{
 		CDCHandle dc(hdc);
@@ -325,100 +325,47 @@ public:
 		else
 			strPaint = strText;
 
-		int iLeft = rcTextClient.left;
-		int iTop = rcTextClient.top;
-		if ((uFormat & DT_RIGHT) != 0)
-			iLeft = rcTextClient.left - szText.cx;
-		if ((uFormat & DT_BOTTOM) != 0)
-			iTop = rcTextClient.bottom - szText.cy;
-		if ((uFormat & DT_CENTER) != 0)
-			iLeft = (rcTextClient.Width() - szText.cx) / 2;
-		if ((uFormat & DT_VCENTER) != 0)
-			iTop = (rcTextClient.Height() - szText.cy) / 2;
-		dc.TextOut(iLeft, iTop, strPaint.c_str(), -1);
+		CPoint ptPaintPoint = GetTextPaintPoint(rcTextClient, szText, uFormat);
+		dc.TextOut(ptPaintPoint.x, ptPaintPoint.y, strPaint.c_str(), -1);
 		dc.SelectFont(hOldFont);
 	}
-
-	//"<html fontid='' color=''>简单的绘制，不支持嵌套</html>"
+	//根据文本大小和绘制样式，确定左上角点
+	static CPoint GetTextPaintPoint(CRect rcCtrlRect, CSize szText, UINT uFormat)
+	{
+		CPoint ptLeftTop(rcCtrlRect.left, rcCtrlRect.top);
+		if ((uFormat & DT_RIGHT) != 0)
+			ptLeftTop.x = rcCtrlRect.left - szText.cx;
+		if ((uFormat & DT_BOTTOM) != 0)
+			ptLeftTop.y = rcCtrlRect.bottom - szText.cy;
+		if ((uFormat & DT_CENTER) != 0)
+			ptLeftTop.x = (rcCtrlRect.Width() - szText.cx) / 2;
+		if ((uFormat & DT_VCENTER) != 0)
+			ptLeftTop.y = (rcCtrlRect.Height() - szText.cy) / 2;
+		return ptLeftTop;
+	}
+	//绘制单行HTML文本
+	//"<html fontid="" color="#">简单的绘制，不支持嵌套</html>"
 	static void DrawHtmlSingleLineText(HDC hdc, String strText, RECT rcText, DWORD dwTextColor, String strFontID, UINT uFormat)
 	{
 		std::vector<TextInfo*> vecTextInfo;
 		vecTextInfo.clear();
 		int iTotalWidth = 0;
 		int iMaxHeight = 0;
-		GetHtmlStringExtend(hdc, strText, dwTextColor, strFontID, vecTextInfo, iTotalWidth, iMaxHeight);
+		GetHtmlStringExtend(hdc, strText, dwTextColor, strFontID, vecTextInfo, iTotalWidth, iMaxHeight);	//将HTML文本解析出来
+		CPoint ptLeftTop = GetTextPaintPoint(rcText, CSize(iTotalWidth, iMaxHeight), uFormat);	//获取绘制的左上角点，由于高度不一致，所以全部用DT_BOTTOM
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		CDCHandle dc(hdc);
-		dc.SetBkMode(TRANSPARENT);
-		dc.SetTextColor(RGB(GetBValue(dwTextColor), GetGValue(dwTextColor), GetRValue(dwTextColor)));
-		HFONT hOldFont = dc.SelectFont(CXKnowFontManager::Instance()->GetFont(strFontID));
-		SIZE szText = { 0, 0 };
-		::GetTextExtentPoint32(dc, strText.c_str(), strText.length(), &szText);
-		String strPaint = _T("");
-		CRect rcTextClient = rcText;
-		if (szText.cx > rcTextClient.Width())	//文字太多，绘制不完，以...结束
+		size_t vceLength = vecTextInfo.size();
+		int iLeft = ptLeftTop.x;
+		int iTop = ptLeftTop.y;
+		for (size_t iIndex = 0; iIndex < vceLength; iIndex++)	//逐一绘制
 		{
-			String strEndEllipsis = _T("...");
-			SIZE szEndEllipsis = { 0, 0 };
-			::GetTextExtentPoint32(dc, strEndEllipsis.c_str(), strEndEllipsis.length(), &szEndEllipsis);
-			if (szEndEllipsis.cx < rcTextClient.Width()) //如果...也画不了，说明宽度太小了
-			{
-				int iStart = 0;
-				szText = { 0, 0 };
-				while (szText.cx < rcTextClient.Width() - szEndEllipsis.cx)
-				{
-					iStart++;
-					::GetTextExtentPoint32(dc, strText.c_str(), iStart, &szText);
-				}
-				if (szText.cx > rcTextClient.Width() - szEndEllipsis.cx)
-				{
-					iStart--;
-				}
-				strPaint = strText.substr(0, iStart) + strEndEllipsis;
-			}
+			TextInfo* pTextInfo = vecTextInfo[iIndex];
+			CRect rcText(iLeft, iTop, iLeft + pTextInfo->iWidth, iTop + iMaxHeight);
+			DrawSingleLineText(hdc, pTextInfo->strText, rcText, pTextInfo->dwColor, pTextInfo->strFontID, DT_BOTTOM);
+			iLeft = iLeft + pTextInfo->iWidth;
 		}
-		else
-			strPaint = strText;
-
-		int iLeft = rcTextClient.left;
-		int iTop = rcTextClient.top;
-		if ((uFormat & DT_RIGHT) != 0)
-			iLeft = rcTextClient.left - szText.cx;
-		if ((uFormat & DT_BOTTOM) != 0)
-			iTop = rcTextClient.bottom - szText.cy;
-		if ((uFormat & DT_CENTER) != 0)
-			iLeft = (rcTextClient.Width() - szText.cx) / 2;
-		if ((uFormat & DT_VCENTER) != 0)
-			iTop = (rcTextClient.Height() - szText.cy) / 2;
-		dc.TextOut(iLeft, iTop, strPaint.c_str(), -1);
-		dc.SelectFont(hOldFont);
 	}
-
+	//绘制多行文本
 	static void DrawMultiLineText(HDC hdc, String strText, RECT rcText, DWORD dwTextColor, String strFontID, int iRowHeight)
 	{
 		CDCHandle dc(hdc);
@@ -474,7 +421,7 @@ public:
 			DrawSingleLineText(hdc, strText, rcText, dwTextColor, strFontID, uFormat);
 		}
 	}
-
+	//绘制HTML文本
 	static void DrawHtmlText(HDC hdc, String strText, RECT& rcText, DWORD dwTextColor, String strFontID, UINT uFormat, BOOL bMultipLine, int iRowHeight)
 	{
 		if (bMultipLine)
@@ -486,7 +433,7 @@ public:
 			DrawHtmlSingleLineText(hdc, strText, rcText, dwTextColor, strFontID, uFormat);
 		}
 	}
-
+	//废弃
 	static void DrawText(HDC hdc, String strText, RECT& rcText, DWORD dwTextColor, String strFontID, UINT uStyle, BOOL bMultipLine = FALSE, int iRowHeight = CXKnowGobal::GetTextRowHeight())
 	{
 		if (strText.empty()) return;
@@ -536,7 +483,7 @@ public:
 		}
 		dc.SelectFont(hOldFont);
 	}
-
+	//获取HTML标签的值
 	static String GetHtmlTagValue(String strStyleText, String strTag)
 	{
 		String strRet = _T("");
@@ -555,7 +502,7 @@ public:
 		}
 		return strRet;
 	}
-
+	//创建TextInfo结构
 	static TextInfo* GetTextInfo(HDC hdc, String strText, DWORD dwColor, String strFontID)
 	{
 		CDCHandle dc(hdc);
@@ -571,6 +518,7 @@ public:
 		pTextInfo->iHeight = szText.cy;
 		return pTextInfo;
 	}
+	//将HTML文件分隔，并获取总宽度 和 最大高度
 	static void GetHtmlStringExtend(HDC hdc, String strText, DWORD dwDefaultColor, String strDefaultFontID, vector<TextInfo *> &vecTextInfoRet, int &iTotalWidth, int &iMaxHeight)
 	{
 		iTotalWidth = 0;
@@ -613,7 +561,8 @@ public:
 					String strStyle = strTmp.substr(nTagStartLeft + 6, nTagStartRight - nTagStartLeft - 6);
 					String strHtmlFontID = GetHtmlTagValue(strStyle, _T("fontid"));
 					String strHtmlColor = GetHtmlTagValue(strStyle, _T("color"));
-					DWORD dwColor = strHtmlColor.empty() ? dwDefaultColor : _ttol(strHtmlColor.c_str());
+					LPTSTR lpEndPtr;
+					DWORD dwColor = strHtmlColor.empty() ? dwDefaultColor : _tcstol(strHtmlColor.c_str()+1, &lpEndPtr, 16);
 					String strFont = strHtmlFontID.empty() ? strDefaultFontID : strHtmlFontID;
 					TextInfo *pHtmlTextInfo = GetTextInfo(hdc, strHtmlText, dwColor, strFont);
 					iTotalWidth += pHtmlTextInfo->iWidth;

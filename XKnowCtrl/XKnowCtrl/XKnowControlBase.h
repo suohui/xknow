@@ -568,7 +568,7 @@ public:
 			{
 				if (pTextInfo->IsHtmlTagEnable())
 				{
-
+					CXKnowRender::DrawHtmlText(hDC, pTextInfo->GetText(), pTextInfo->GetTextRect(), pTextInfo->GetTextStateColor(iState), pTextInfo->GetTextStateFontID(iState), pTextInfo->GetTextFormatStyle(), pTextInfo->IsTextMultiLine(), pTextInfo->GetTextRowHeight());
 				}
 				else
 				{

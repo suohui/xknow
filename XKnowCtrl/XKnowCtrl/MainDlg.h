@@ -127,6 +127,7 @@ public:
 		//m_lblTest.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);
 		m_lblTest.SetBkgndColor(GetSysColor(COLOR_BTNFACE));
 		m_lblTest.SetText(_T("像\t素是组成点阵图的基本单位,厘米和像素是没有换算关系的; 在点阵图中有一个单"));
+		m_lblTest.SetTextRect(0, 0, 100, 80);
 		m_lblTest.SetTextMultiLine(TRUE);
 		m_lblTest.SetTextRowHeight(20);
 		m_lblTest.MoveWindow(50, 150, 100, 80);
@@ -142,12 +143,13 @@ public:
 		m_lblTest2.SubclassWindow(GetDlgItem(IDC_SIMPLETEST).m_hWnd);
 		m_lblTest2.SetBkgndBitmap(GetBkgndHBitmap());
 		
-		m_lblTest2.MoveWindow(300, 300, 120, 40);
+		m_lblTest2.MoveWindow(300, 300, 120, 60);
 		m_lblTest2.SetText(L"随便玩一下");
 		m_lblTest2.SetTextRect(0, 0, 30, 20);
 
-		m_lblTest2.SetText(L"随便玩一下", L"haha2");
-		m_lblTest2.SetTextRect(0, 20, 120, 20, L"haha2");
+		m_lblTest2.SetText(L"随便<html fontid=\"default.font13\" color=\"#FF0044\">玩</html>一下", L"haha2");
+		m_lblTest2.EnableHtmlTag(TRUE, L"haha2");
+		m_lblTest2.SetTextRect(0, 20, 120, 40, L"haha2");
 	}
 	CXKnowButton m_MenuBtn;
 	CXKnowButton m_MinBtn;
