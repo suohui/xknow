@@ -21,6 +21,7 @@ extern CAppModule _Module;
 #include <string>
 #include <vector>
 #include <map>
+#include <algorithm>
 using namespace std;
 #ifdef UNICODE
 #define String  std::wstring

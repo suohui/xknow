@@ -97,6 +97,21 @@ public:
 		//logoWnd.ModifyStyle(0xF, SS_BITMAP | SS_CENTERIMAGE);//设置静态控件的样式，使其可以使用位图，并试位标显示使居中
 		//logoWnd.SetBitmap(m_hLogoBmp);
 		//logoWnd.MoveWindow(180+22, 12, 167, 32);
+
+		CDouImageObject *pJewel = GetImageObject(L"Jewel");
+		pJewel->SetImageFilePath(CXKnowGobal::GetImageDir() + _T("jewel.png"));
+		pJewel->SetImageRect(22, 12, 167, 32);
+		pJewel->SetZOrder(1);
+
+		CDouImageObject *pLogo = GetImageObject(L"Logo");
+		pLogo->SetImageFilePath(CXKnowGobal::GetImageDir() + _T("logo.png"));
+		pLogo->SetImageRect(22, 12, 167, 32);
+
+
+
+		CDouTextObject *pTextObj = GetTextObject(L"Title");
+		pTextObj->SetText(L"我是标题");
+		pTextObj->SetTextRect(200, 10, 50, 20);
 		
 
 		//设置按钮
@@ -189,8 +204,10 @@ public:
 		//CAboutDlg dlg;
 		//dlg.DoModal();
 		//m_lblTest.SetBkgndColor(RGB(122, 240, 153));
-		SetText(L"哈哈");
-		InvalidateRect(&m_rcText);
+		CDouTextObject *pTextObj = GetTextObject(L"Title");
+		pTextObj->SetText(L"哈哈标题");
+		//SetText(L"哈哈");
+		//InvalidateRect(&m_rcText);
 		return 0;
 	}
 

@@ -1,5 +1,390 @@
 #pragma once
 
+class CDouTextObject
+{
+public:
+	CDouTextObject(HWND hWndOwner)
+	{
+		//设置默认字体ID
+		m_strFontID = CXKnowGobal::GetTextNormalFontID();
+		//设置默认字体颜色
+		m_dwTextColor = CXKnowGobal::GetTextNormalColor();
+		//设置默认字体绘制样式
+		m_uFormatStyle = CXKnowGobal::GetTextFormatStyle();
+		m_bMultiLine = FALSE;
+		m_bVisible = TRUE;
+		m_bHtmlTagEnable = FALSE;
+		m_iRowHeight = CXKnowGobal::GetTextRowHeight();
+		m_hWndOwner = hWndOwner;
+	}
+
+	void SetText(String strText)
+	{
+		m_strText = strText;
+		::InvalidateRect(m_hWndOwner, &m_rcText, TRUE);
+	}
+	void EnableHtmlTag(BOOL bTagEnable)
+	{
+		m_bHtmlTagEnable = bTagEnable;
+	}
+	void SetTextRowHeight(int iHeight)
+	{
+		m_iRowHeight = iHeight;
+	}
+	void SetTextVisible(BOOL bVisible)
+	{
+		m_bVisible = bVisible;
+	}
+
+	void SetTextColor(DWORD dwTextColor)
+	{
+		m_dwTextColor = dwTextColor;
+	}
+
+	void SetTextFontID(String strFontID)
+	{
+		m_strFontID = strFontID;
+	}
+
+	void SetTextRect(int iLeft, int iTop, int iWidth, int iHeight)
+	{
+		m_rcText.SetRect(iLeft, iTop, iLeft + iWidth, iTop + iHeight);
+	}
+
+	void SetTextFormatStyle(UINT uStyle)
+	{
+		m_uFormatStyle = uStyle;
+	}
+
+	void SetTextMultiLine(BOOL bMultiLine)
+	{
+		m_bMultiLine = bMultiLine;
+	}
+
+	String GetText()
+	{
+		return m_strText;
+	}
+
+	BOOL IsHtmlTagEnable()
+	{
+		return m_bHtmlTagEnable;
+	}
+
+	int GetTextRowHeight()
+	{
+		return m_iRowHeight;
+	}
+
+	BOOL IsTextVisible()
+	{
+		return m_bVisible;
+	}
+
+	DWORD GetTextColor()
+	{
+		return m_dwTextColor;
+	}
+
+	String GetTextFontID()
+	{
+		return m_strFontID;
+	}
+
+	CRect GetTextRect()
+	{
+		return m_rcText;
+	}
+
+	UINT GetTextFormatStyle()
+	{
+		return m_uFormatStyle;
+	}
+
+	BOOL IsTextMultiLine()
+	{
+		return m_bMultiLine;
+	}
+private:
+	String m_strFontID; //字体ID
+	DWORD m_dwTextColor;//字体颜色
+	UINT  m_uFormatStyle; //文字绘制样式
+	BOOL m_bMultiLine;	//多行。简单起见，单行默认的绘制样式为DT_CENTER | DT_VCENTER | DT_SINGLELINE
+	BOOL m_bVisible;//是否可见
+	BOOL m_bHtmlTagEnable;//支持THML标签绘制
+	int m_iRowHeight;
+	String m_strText;	//文字内容
+	CRect m_rcText;	//文字绘制矩形框
+	HWND m_hWndOwner;	//控件归属的绘图句柄
+};
+
+//Icon图标信息基础类，单一图片信息，例如：按钮上的标识图标、窗体LOGO，
+class CDouImageObject
+{
+public:
+	CDouImageObject(HWND hWndOwner)
+	{
+		m_pImageInfo = NULL;
+		m_hWndOwner = hWndOwner;
+		m_bVisible = TRUE;
+		m_iZOrder = 0;
+	}
+	~CDouImageObject()
+	{
+		CXKnowRender::FreeImage(m_pImageInfo);
+	}
+
+	void SetImageFilePath(String strFilePath)
+	{
+		m_pImageInfo = CXKnowRender::LoadImageFromFile(strFilePath);
+		::InvalidateRect(m_hWndOwner, &m_rcImage, TRUE);
+	}
+
+	void SetImageRect(int iLeft, int iTop, int iWidth, int iHeight)
+	{
+		m_rcImage.SetRect(iLeft, iTop, iLeft + iWidth, iTop + iHeight);
+		::InvalidateRect(m_hWndOwner, &m_rcImage, TRUE);
+	}
+
+	void SetImageVisible(BOOL bVisible = TRUE)
+	{
+		m_bVisible = bVisible;
+	}
+
+	void SetZOrder(int iZOrder)
+	{
+		m_iZOrder = iZOrder;
+	}
+
+	XKnowImageInfo* GetImageInfo()
+	{
+		return m_pImageInfo;
+	}
+
+	CRect GetImageRect()
+	{
+		return m_rcImage;
+	}
+
+	BOOL IsImageVisible()
+	{
+		return m_bVisible;
+	}
+
+	int GetZOrder()
+	{
+		return m_iZOrder;
+	}
+protected:
+	XKnowImageInfo * m_pImageInfo;
+	HWND m_hWndOwner;	//控件归属的绘图句柄
+	BOOL m_bVisible;
+	CRect m_rcImage;
+	int m_iZOrder;
+};
+
+typedef pair<String, int> StringIntPair;
+struct CmpByValue
+{
+	bool operator()(const StringIntPair& left, const StringIntPair& right)
+	{
+		return left.second < right.second;
+	}
+};
+
+template <class T>
+class CDouControlBase
+{
+public:
+	CDouControlBase()
+	{
+		m_TextObjectMap.clear();
+		m_ImageObjectMap.clear();
+	}
+	~CDouControlBase()
+	{
+		map<String, CDouTextObject*>::iterator iterText;
+		for (iterText = m_TextObjectMap.begin(); iterText != m_TextObjectMap.end(); iterText++)
+		{
+			if (NULL != iterText->second)
+			{
+				delete iterText->second;
+				iterText->second = NULL;
+			}
+		}
+		m_TextObjectMap.clear();
+
+		map<String, CDouImageObject*>::iterator iterImage;
+		for (iterImage = m_ImageObjectMap.begin(); iterImage != m_ImageObjectMap.end(); iterImage++)
+		{
+			if (NULL != iterImage->second)
+			{
+				delete iterImage->second;
+				iterImage->second = NULL;
+			}
+		}
+		m_ImageObjectMap.clear();
+	}
+	CDouTextObject* GetTextObject(String strObjID)	//仿FileOpen，如果没有，则创建。如果有，则直接返回
+	{
+		if (m_TextObjectMap[strObjID] == NULL)
+		{
+			T* pThis = static_cast<T*>(this);
+			m_TextObjectMap[strObjID] = new CDouTextObject(pThis->m_hWnd);
+		}
+		return m_TextObjectMap[strObjID];
+	}
+	CDouImageObject* GetImageObject(String strObjID)
+	{
+		if (m_ImageObjectMap[strObjID] == NULL)
+		{
+			T* pThis = static_cast<T*>(this);
+			m_ImageObjectMap[strObjID] = new CDouImageObject(pThis->m_hWnd);
+		}
+		return m_ImageObjectMap[strObjID];
+	}
+protected:
+	void DrawAllObject(HDC hDC)
+	{
+		//画图片,先将ZOrder递增排序
+		map<String, CDouImageObject*>::iterator iterImage;
+		vector<StringIntPair> vecZorder;
+		for (iterImage = m_ImageObjectMap.begin(); iterImage != m_ImageObjectMap.end(); iterImage++)
+		{
+			CDouImageObject* pImageObject = iterImage->second;
+			if ((NULL != pImageObject) && (pImageObject->IsImageVisible()) && (pImageObject->GetImageInfo() != NULL) && !pImageObject->GetImageRect().IsRectEmpty())
+			{
+				vecZorder.push_back(make_pair(iterImage->first, pImageObject->GetZOrder()));
+			}
+		}
+		sort(vecZorder.begin(), vecZorder.end(), CmpByValue());
+		vector<StringIntPair>::iterator iterZOrder;
+		for (iterZOrder = vecZorder.begin(); iterZOrder != vecZorder.end(); iterZOrder++)	//ZOrder大的在上面
+		{
+			CDouImageObject* pImageObject = m_ImageObjectMap[iterZOrder->first];
+			CXKnowRender::DrawImage(hDC, pImageObject->GetImageRect(), pImageObject->GetImageInfo()->hBitmap, CRect(0, 0, pImageObject->GetImageInfo()->iWidth, pImageObject->GetImageInfo()->iHeight), pImageObject->GetImageInfo()->bAlpha, FALSE);
+		}
+		//画文字
+		map<String, CDouTextObject*>::iterator iterText;
+		for (iterText = m_TextObjectMap.begin(); iterText != m_TextObjectMap.end(); iterText++)
+		{
+			CDouTextObject* pTextInfo = iterText->second;
+			if ((NULL != pTextInfo) && (pTextInfo->IsTextVisible()) && !pTextInfo->GetText().empty() && !pTextInfo->GetTextRect().IsRectEmpty())
+			{
+				if (pTextInfo->IsHtmlTagEnable())
+				{
+					CXKnowRender::DrawHtmlText(hDC, pTextInfo->GetText(), pTextInfo->GetTextRect(), pTextInfo->GetTextColor(), pTextInfo->GetTextFontID(), pTextInfo->GetTextFormatStyle(), pTextInfo->IsTextMultiLine(), pTextInfo->GetTextRowHeight());
+				}
+				else
+				{
+					CXKnowRender::DrawText1(hDC, pTextInfo->GetText(), pTextInfo->GetTextRect(), pTextInfo->GetTextColor(), pTextInfo->GetTextFontID(), pTextInfo->GetTextFormatStyle(), pTextInfo->IsTextMultiLine(), pTextInfo->GetTextRowHeight());
+				}
+			}
+		}
+	}
+private:
+	map<String, CDouTextObject*> m_TextObjectMap;
+	map<String, CDouImageObject*> m_ImageObjectMap;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //文字信息基础类
 class CXKnowTextBase
 {

@@ -4,7 +4,8 @@
 template <class T>
 class CXKnowDlgBase : public CMessageMap,
 					  public CXKnowTextBase,
-					  public CXKnowIconBase
+					  public CXKnowIconBase,
+					  public CDouControlBase<T>
 {
 public:
 	CXKnowDlgBase()
@@ -83,12 +84,13 @@ protected:
 		if (m_pBkgndImageInfo != NULL)
 			CXKnowRender::DrawImage(dcMem, rcClient, m_pBkgndImageInfo->hBitmap, CRect(0, 0, m_pBkgndImageInfo->iWidth, m_pBkgndImageInfo->iHeight), FALSE, FALSE);
 		//»­LOGO
-		if (m_pIconImageInfo != NULL && !m_rcIcon.IsRectNull())
+		//if (m_pIconImageInfo != NULL && !m_rcIcon.IsRectNull())
 		{
-			CXKnowRender::DrawImage(dcMem, m_rcIcon, m_pIconImageInfo->hBitmap, CRect(0, 0, m_pIconImageInfo->iWidth, m_pIconImageInfo->iHeight), m_pIconImageInfo->bAlpha, FALSE);
+			//CXKnowRender::DrawImage(dcMem, m_rcIcon, m_pIconImageInfo->hBitmap, CRect(0, 0, m_pIconImageInfo->iWidth, m_pIconImageInfo->iHeight), m_pIconImageInfo->bAlpha, FALSE);
 		}
 		//»­Title
-		CXKnowRender::DrawText(dcMem, m_strText, m_rcText, m_dwTextColor[0], m_strFontID[0], m_uFormatStyle);
+		DrawAllObject(dcMem);
+		//CXKnowRender::DrawText(dcMem, m_strText, m_rcText, m_dwTextColor[0], m_strFontID[0], m_uFormatStyle);
 
 		return 0;
 	}
