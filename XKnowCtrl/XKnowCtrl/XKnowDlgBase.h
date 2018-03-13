@@ -22,6 +22,7 @@ public:
 	BEGIN_MSG_MAP(CXKnowDlgBase)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
 		MESSAGE_HANDLER(WM_NCHITTEST, OnNcHitTest)
 	END_MSG_MAP()
 public:
@@ -94,8 +95,12 @@ protected:
 
 		return 0;
 	}
+	LRESULT OnEraseBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		return TRUE;
+	}
 
-	//无边框窗体可拖动
+	//无边框窗体可拖动https://www.cnblogs.com/findumars/p/5312594.html
 	LRESULT OnNcHitTest(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 	{
 		return HTCAPTION;

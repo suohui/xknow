@@ -1,5 +1,102 @@
 #pragma once
 
+
+class CDouButton : public CWindowImpl<CDouButton, CButton>,
+	public CCustomDraw<CDouButton>,
+	public CDouControlBase<CDouButton>,
+	public CXKnowTextBase,
+	public CXKnowImageBase
+{
+public:
+	CDouButton()
+	{
+	}
+	~CDouButton()
+	{
+	}
+
+	BEGIN_MSG_MAP(CDouButton)
+		MESSAGE_HANDLER(WM_SETCURSOR, OnSetCursor)
+		CHAIN_MSG_MAP_ALT(CCustomDraw<CDouButton>, 1)
+	END_MSG_MAP()
+
+public:
+	DWORD OnPreErase(int /*uCtrl*/, LPNMCUSTOMDRAW lpNMCD)
+	{
+		CDCHandle dc(lpNMCD->hdc);
+		CRect rcClient = lpNMCD->rc;
+		CMemoryDC memDC(dc, rcClient);
+
+		UINT uItemState = lpNMCD->uItemState;
+		int iStateIndex = 0;
+		if ((lpNMCD->uItemState & CDIS_SELECTED) != 0)
+		{
+			iStateIndex = 2;
+		}
+		else if ((lpNMCD->uItemState & CDIS_HOT) != 0)
+		{
+			iStateIndex = 1;
+		}
+		else if ((lpNMCD->uItemState & CDIS_DISABLED) != 0)
+		{
+			iStateIndex = 3;
+		}
+		//画背景、画前景、画文字
+		//DrawControlBkgnd(memDC, rcClient);
+		CXKnowRender::DrawImage(memDC, rcClient, m_pImageInfo->hBitmap, m_rcImageRect[iStateIndex], m_pImageInfo->bAlpha);
+		CXKnowRender::DrawText(memDC, m_strText, m_rcText.IsRectNull() ? rcClient : m_rcText, m_dwTextColor[iStateIndex], m_strFontID[iStateIndex], m_uFormatStyle);
+		return CDRF_SKIPDEFAULT;
+	}
+
+	LRESULT OnSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		::SetCursor(::LoadCursor(NULL, IDC_HAND));
+		return TRUE;
+	}
+private:
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //说明：简单起见，按钮图片只能横着并排放一起，不再支持单独加载
 //最全的消息映射宏说明：https://technet.microsoft.com/zh-cn/hk23896b
 //注意消息映射 http://blog.sina.com.cn/s/blog_4e0987310101iju5.html

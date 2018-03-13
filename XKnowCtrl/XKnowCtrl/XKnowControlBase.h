@@ -1,5 +1,6 @@
 #pragma once
 
+//文字信息基础类
 class CDouTextObject
 {
 public:
@@ -183,6 +184,58 @@ protected:
 	int m_iZOrder;
 };
 
+//按钮类
+class CDouButtonObject
+{
+public:
+	CDouButtonObject(HWND hWndOwner)
+	{
+		m_pImageInfo = NULL;
+		m_hWndOwner = hWndOwner;
+	}
+	~CDouButtonObject()
+	{
+		CXKnowRender::FreeImage(m_pImageInfo);
+	}
+
+	void SetImageFilePath(String strImageFilePath, PNGTYPE type)
+	{
+		m_pImageInfo = CXKnowRender::LoadImageFromFile(strImageFilePath, 1);
+		int iWidth = m_pImageInfo->iWidth;
+		int iHeight = m_pImageInfo->iHeight;
+		if (type == PNGTYPE::TwoInOne)
+		{
+			m_rcImageRect[0].SetRect(0, 0, iWidth / 2, iHeight);
+			m_rcImageRect[1].SetRect(iWidth / 2, 0, iWidth, iHeight);
+			m_rcImageRect[2] = m_rcImageRect[1];
+			m_rcImageRect[3] = m_rcImageRect[1];
+		}
+		else if (type == PNGTYPE::ThreeInOne)
+		{
+			m_rcImageRect[0].SetRect(0, 0, iWidth / 3, iHeight);
+			m_rcImageRect[1].SetRect(iWidth / 3, 0, iWidth * 2 / 3, iHeight);
+			m_rcImageRect[2].SetRect(iWidth * 2 / 3, 0, iWidth, iHeight);
+			m_rcImageRect[3] = m_rcImageRect[2];
+		}
+		else if (type == PNGTYPE::FourInOne)
+		{
+			m_rcImageRect[0].SetRect(0, 0, iWidth / 4, iHeight);
+			m_rcImageRect[1].SetRect(iWidth / 4, 0, iWidth * 2 / 4, iHeight);
+			m_rcImageRect[2].SetRect(iWidth * 2 / 4, 0, iWidth * 3 / 4, iHeight);
+			m_rcImageRect[3].SetRect(iWidth * 3 / 4, 0, iWidth, iHeight);
+		}
+	}
+public:
+	XKnowImageInfo * m_pImageInfo;
+	CRect m_rcImageRect[4];
+	HWND m_hWndOwner;	//控件归属的绘图句柄
+};
+
+
+
+
+
+
 typedef pair<String, int> StringIntPair;
 struct CmpByValue
 {
@@ -200,6 +253,7 @@ public:
 	{
 		m_TextObjectMap.clear();
 		m_ImageObjectMap.clear();
+		m_ButtonObjectMap.clear();
 	}
 	~CDouControlBase()
 	{
@@ -224,6 +278,17 @@ public:
 			}
 		}
 		m_ImageObjectMap.clear();
+
+		map<String, CDouButtonObject*>::iterator iterButton;
+		for (iterButton = m_ButtonObjectMap.begin(); iterButton != m_ButtonObjectMap.end(); iterButton++)
+		{
+			if (NULL != iterButton->second)
+			{
+				delete iterButton->second;
+				iterButton->second = NULL;
+			}
+		}
+		m_ButtonObjectMap.clear();
 	}
 	CDouTextObject* GetTextObject(String strObjID)	//仿FileOpen，如果没有，则创建。如果有，则直接返回
 	{
@@ -242,6 +307,16 @@ public:
 			m_ImageObjectMap[strObjID] = new CDouImageObject(pThis->m_hWnd);
 		}
 		return m_ImageObjectMap[strObjID];
+	}
+
+	CDouButtonObject* GetButtonObject(String strObjID)
+	{
+		if (m_ButtonObjectMap[strObjID] == NULL)
+		{
+			T* pThis = static_cast<T*>(this);
+			m_ButtonObjectMap[strObjID] = new CDouButtonObject(pThis->m_hWnd);
+		}
+		return m_ButtonObjectMap[strObjID];
 	}
 protected:
 	void DrawAllObject(HDC hDC)
@@ -264,6 +339,13 @@ protected:
 			CDouImageObject* pImageObject = m_ImageObjectMap[iterZOrder->first];
 			CXKnowRender::DrawImage(hDC, pImageObject->GetImageRect(), pImageObject->GetImageInfo()->hBitmap, CRect(0, 0, pImageObject->GetImageInfo()->iWidth, pImageObject->GetImageInfo()->iHeight), pImageObject->GetImageInfo()->bAlpha, FALSE);
 		}
+		//画Button
+		map<String, CDouButtonObject*>::iterator iterButton;
+		for (iterButton = m_ButtonObjectMap.begin(); iterButton != m_ButtonObjectMap.end(); iterButton++)
+		{
+			CDouButtonObject*  pButtonInfo = iterButton->second;
+			CXKnowRender::DrawImage(hDC, CRect(150, 200, 160+150, 32+200), pButtonInfo->m_pImageInfo->hBitmap, pButtonInfo->m_rcImageRect[0], true);
+		}
 		//画文字
 		map<String, CDouTextObject*>::iterator iterText;
 		for (iterText = m_TextObjectMap.begin(); iterText != m_TextObjectMap.end(); iterText++)
@@ -285,6 +367,7 @@ protected:
 private:
 	map<String, CDouTextObject*> m_TextObjectMap;
 	map<String, CDouImageObject*> m_ImageObjectMap;
+	map<String, CDouButtonObject*> m_ButtonObjectMap;
 };
 
 

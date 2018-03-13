@@ -30,6 +30,7 @@ using namespace std;
 #endif // !UNICODE
 
 #include <stb_image.h>
+#include <XUnzip.h>
 #include "XKnowRender.h"
 #include "XKnowControlBase.h"
 #include "XKnowDlgBase.h"

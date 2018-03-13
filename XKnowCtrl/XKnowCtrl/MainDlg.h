@@ -112,6 +112,9 @@ public:
 		CDouTextObject *pTextObj = GetTextObject(L"Title");
 		pTextObj->SetText(L"我是标题");
 		pTextObj->SetTextRect(200, 10, 50, 20);
+
+		CDouButtonObject *pBtnObj = GetButtonObject(L"Reboot");
+		pBtnObj->SetImageFilePath(CXKnowGobal::GetImageDir() + _T("btn.png"), PNGTYPE::FourInOne);
 		
 
 		//设置按钮
@@ -130,13 +133,13 @@ public:
 		m_CloseBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("close.png"), PNGTYPE::ThreeInOne);
 		m_CloseBtn.MoveWindow(680 - 12 - 28, 14, 28, 28);
 
-		m_RebootBtn.SubclassWindow(GetDlgItem(IDC_REBOOT).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_RebootBtn.SetBkgndBitmap(GetBkgndHBitmap());
-		m_RebootBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("btn.png"), PNGTYPE::FourInOne);
-		m_RebootBtn.MoveWindow(150, 200, 160, 32);
-		m_RebootBtn.SetTextColor(0, GetSysColor(COLOR_BTNFACE), GetSysColor(COLOR_GRAYTEXT), 0);
-		//m_RebootBtn.EnableWindow(FALSE);
-		m_RebootBtn.SetText(L"立即重启");
+		//m_RebootBtn.SubclassWindow(GetDlgItem(IDC_REBOOT).m_hWnd);	//SubclassWindow只对CreateWindow时有效
+		//m_RebootBtn.SetBkgndBitmap(GetBkgndHBitmap());
+		//m_RebootBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("btn.png"), PNGTYPE::FourInOne);
+		//m_RebootBtn.MoveWindow(150, 200, 160, 32);
+		//m_RebootBtn.SetTextColor(0, GetSysColor(COLOR_BTNFACE), GetSysColor(COLOR_GRAYTEXT), 0);
+		////m_RebootBtn.EnableWindow(FALSE);
+		//m_RebootBtn.SetText(L"立即重启");
 
 		m_lblTest.SubclassWindow(GetDlgItem(IDC_LABELTEST).m_hWnd);
 		//m_lblTest.SetBkgndBitmap(m_pBkgndImageInfo->hBitmap);

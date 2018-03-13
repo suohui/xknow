@@ -141,31 +141,67 @@ struct TextInfo
 	int iHeight;
 };
 
+#ifdef _UNICODE
+#define ZIPENTRY ZIPENTRYW
+#endif
+
 class CXKnowRender
 {
 public:
-	static XKnowImageInfo * LoadImageFromFile(String strFileName)
+	static XKnowImageInfo * LoadImageFromFile(String strFileName, int itype = 0)
 	{
-		HANDLE hFile = ::CreateFile(strFileName.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (hFile == INVALID_HANDLE_VALUE)
+		LPBYTE pData = NULL;
+		DWORD dwSize = 0;
+		if (itype == 0)
 		{
-			return NULL;
+			HANDLE hFile = ::CreateFile(strFileName.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hFile == INVALID_HANDLE_VALUE)
+			{
+				return NULL;
+			}
+			dwSize = ::GetFileSize(hFile, NULL);
+			if (dwSize == 0)
+			{
+				return NULL;
+			}
+			pData = new BYTE[dwSize];
+			DWORD dwRead = 0;
+			::ReadFile(hFile, pData, dwSize, &dwRead, NULL);
+			::CloseHandle(hFile);
+			if (dwRead != dwSize)
+			{
+				delete[] pData;
+				pData = NULL;
+				return NULL;
+			}
 		}
-		DWORD dwSize = ::GetFileSize(hFile, NULL);
-		if (dwSize == 0)
+		else
 		{
-			return NULL;
+			HZIP hz = OpenZip((void *)L"C:\\Users\\Suo\\Desktop\\≤‚ ‘.zip", 0, 2);	//ZIP_FILENAME
+			if (hz == NULL)
+			{
+				return NULL;
+			}
+			ZIPENTRY ze;
+			int i;
+			FindZipItem(hz, L"≤‚ ‘\\FLOAT.png", true, &i, &ze);
+			dwSize = ze.unc_size;
+			if (dwSize == 0)
+			{
+				return NULL;
+			}
+			pData = new BYTE[dwSize];
+			int iRet = UnzipItem(hz, i, pData, dwSize, 3);
+			if (iRet != 0x00000000 && iRet != 0x00000600)
+			{
+				delete[] pData;
+				pData = NULL;
+				CloseZip(hz);
+				return NULL;
+			}
+			CloseZip(hz);
 		}
-		LPBYTE pData = new BYTE[dwSize];
-		DWORD dwRead = 0;
-		::ReadFile(hFile, pData, dwSize, &dwRead, NULL);
-		::CloseHandle(hFile);
-		if (dwRead != dwSize)
-		{
-			delete[] pData;
-			pData = NULL;
-			return NULL;
-		}
+
 		int x = 1, y = 1, n;
 		LPBYTE pImage = stbi_load_from_memory(pData, dwSize, &x, &y, &n, 4);
 		delete[] pData;
