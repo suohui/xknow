@@ -24,6 +24,7 @@ public:
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
 		MESSAGE_HANDLER(WM_NCHITTEST, OnNcHitTest)
+		CHAIN_MSG_MAP(CDouControlBase)
 	END_MSG_MAP()
 public:
 	// Overrideables//必须继承，窗体的初始化函数

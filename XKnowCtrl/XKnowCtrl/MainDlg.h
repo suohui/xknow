@@ -115,6 +115,7 @@ public:
 
 		CDouButtonObject *pBtnObj = GetButtonObject(L"Reboot");
 		pBtnObj->SetImageFilePath(CXKnowGobal::GetImageDir() + _T("btn.png"), PNGTYPE::FourInOne);
+		pBtnObj->SetButtonRect(150, 200, 160, 32);
 		
 
 		//…Ë÷√∞¥≈•

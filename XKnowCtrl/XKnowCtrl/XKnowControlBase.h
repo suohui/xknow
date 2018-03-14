@@ -185,6 +185,13 @@ protected:
 };
 
 //按钮类
+enum DouControlState
+{
+	Normal,
+	Hover,
+	LButtonDown,
+	LButtonUp
+};
 class CDouButtonObject
 {
 public:
@@ -192,15 +199,23 @@ public:
 	{
 		m_pImageInfo = NULL;
 		m_hWndOwner = hWndOwner;
+		m_bVisible = TRUE;
+		m_iLastState = DouControlState::Normal;
+		m_iCurState = DouControlState::Normal;
+		m_bDown = FALSE;
+		m_bHover = FALSE;
 	}
 	~CDouButtonObject()
 	{
 		CXKnowRender::FreeImage(m_pImageInfo);
 	}
-
+	DouControlState m_iLastState;
+	DouControlState m_iCurState;
+	BOOL m_bDown;
+	BOOL m_bHover;
 	void SetImageFilePath(String strImageFilePath, PNGTYPE type)
 	{
-		m_pImageInfo = CXKnowRender::LoadImageFromFile(strImageFilePath, 1);
+		m_pImageInfo = CXKnowRender::LoadImageFromFile(strImageFilePath);
 		int iWidth = m_pImageInfo->iWidth;
 		int iHeight = m_pImageInfo->iHeight;
 		if (type == PNGTYPE::TwoInOne)
@@ -225,10 +240,33 @@ public:
 			m_rcImageRect[3].SetRect(iWidth * 3 / 4, 0, iWidth, iHeight);
 		}
 	}
+
+
+	void SetButtonRect(int iLeft, int iTop, int iWidth, int iHeight)
+	{
+		m_rcButtonRect.SetRect(iLeft, iTop, iLeft + iWidth, iTop + iHeight);
+		::InvalidateRect(m_hWndOwner, &m_rcButtonRect, TRUE);
+	}
+
+	void SetButtonVisible(BOOL bVisible = TRUE)
+	{
+		m_bVisible = bVisible;
+	}
+
+	CRect GetButtonRect()
+	{
+		return m_rcButtonRect;
+	}
+	BOOL IsButtonVisible()
+	{
+		return m_bVisible;
+	}
 public:
 	XKnowImageInfo * m_pImageInfo;
 	CRect m_rcImageRect[4];
 	HWND m_hWndOwner;	//控件归属的绘图句柄
+	CRect m_rcButtonRect;
+	BOOL m_bVisible;
 };
 
 
@@ -251,6 +289,8 @@ class CDouControlBase
 public:
 	CDouControlBase()
 	{
+		m_bTracking = FALSE;
+		m_bMouseDown = FALSE;
 		m_TextObjectMap.clear();
 		m_ImageObjectMap.clear();
 		m_ButtonObjectMap.clear();
@@ -318,7 +358,100 @@ public:
 		}
 		return m_ButtonObjectMap[strObjID];
 	}
+
+	BEGIN_MSG_MAP(CDouControlBase)
+		MESSAGE_HANDLER(WM_NCMOUSEMOVE, OnNcMouseMove)
+		MESSAGE_HANDLER(WM_NCMOUSELEAVE, OnNcMouseLeave)
+		MESSAGE_HANDLER(WM_NCLBUTTONDOWN, OnNcLButtonDown)
+		MESSAGE_HANDLER(WM_LBUTTONUP, OnLButtonUp)
+	END_MSG_MAP()
 protected:
+
+	BOOL SetDouControlState(CPoint pt, DouControlState ctlState)
+	{
+		if (m_bMouseDown)
+			return TRUE;
+		BOOL bRet = FALSE;
+		T* pThis = static_cast<T*>(this);
+		//是否落在Button上
+		map<String, CDouButtonObject*>::iterator iterButton;
+		for (iterButton = m_ButtonObjectMap.begin(); iterButton != m_ButtonObjectMap.end(); iterButton++)
+		{
+			CDouButtonObject*  pButtonInfo = iterButton->second;	///////////////添加可见与可用的判断
+			CRect rcButtonObj = pButtonInfo->GetButtonRect();
+			pButtonInfo->m_iLastState = pButtonInfo->m_iCurState;
+			if (rcButtonObj.PtInRect(pt))	//落上Button上，绘制
+			{
+				pButtonInfo->m_iCurState = ctlState;
+				if (pButtonInfo->m_iLastState != pButtonInfo->m_iCurState)
+					::InvalidateRect(pThis->m_hWnd, &rcButtonObj, TRUE);
+				bRet = TRUE;
+			}
+			else
+			{
+				if (pButtonInfo->m_iCurState != DouControlState::Normal)
+				{
+					::InvalidateRect(pThis->m_hWnd, &rcButtonObj, TRUE);
+				}
+				pButtonInfo->m_iCurState = DouControlState::Normal;
+				pButtonInfo->m_iLastState = DouControlState::Normal;
+			}
+		}
+		return bRet;
+	}
+	
+	LRESULT OnNcMouseMove(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+	{
+		T* pThis = static_cast<T*>(this);
+		CPoint pt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		::ScreenToClient(pThis->m_hWnd, &pt);
+		SetDouControlState(pt, DouControlState::Hover);
+
+		if (!m_bTracking)
+		{
+			TRACKMOUSEEVENT tme;
+			tme.cbSize = sizeof(TRACKMOUSEEVENT);
+			tme.dwFlags = TME_LEAVE | TME_HOVER;
+			tme.dwHoverTime = 10;
+			tme.hwndTrack = pThis->m_hWnd;
+			m_bTracking = ::_TrackMouseEvent(&tme);
+		}
+		return 0;
+	}
+	LRESULT OnNcMouseLeave(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		m_bTracking = FALSE;
+		SetDouControlState(CPoint(-1, -1), DouControlState::Normal);
+		return 0;
+	}
+	BOOL m_bMouseDown;
+	LRESULT OnNcLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled)
+	{
+		bHandled = FALSE;
+		T* pThis = static_cast<T*>(this);
+		CPoint pt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		::ScreenToClient(pThis->m_hWnd, &pt);
+		if (SetDouControlState(pt, DouControlState::LButtonDown))
+		{
+			m_bMouseDown = TRUE;
+			bHandled = TRUE;	//将消息转往客户区
+			T* pThis = static_cast<T*>(this);
+			::SetCapture(pThis->m_hWnd);
+		}
+		return 0;
+	}
+	LRESULT OnLButtonUp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+	{
+		ReleaseCapture();
+		m_bMouseDown = FALSE;
+		T* pThis = static_cast<T*>(this);
+		CPoint pt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		::ScreenToClient(pThis->m_hWnd, &pt);
+		SetDouControlState(pt, DouControlState::LButtonUp);
+
+		return 0;
+	}
+	
 	void DrawAllObject(HDC hDC)
 	{
 		//画图片,先将ZOrder递增排序
@@ -344,7 +477,7 @@ protected:
 		for (iterButton = m_ButtonObjectMap.begin(); iterButton != m_ButtonObjectMap.end(); iterButton++)
 		{
 			CDouButtonObject*  pButtonInfo = iterButton->second;
-			CXKnowRender::DrawImage(hDC, CRect(150, 200, 160+150, 32+200), pButtonInfo->m_pImageInfo->hBitmap, pButtonInfo->m_rcImageRect[0], true);
+			CXKnowRender::DrawImage(hDC, pButtonInfo->GetButtonRect(), pButtonInfo->m_pImageInfo->hBitmap, pButtonInfo->m_rcImageRect[pButtonInfo->m_iCurState], true);
 		}
 		//画文字
 		map<String, CDouTextObject*>::iterator iterText;
@@ -365,6 +498,7 @@ protected:
 		}
 	}
 private:
+	BOOL m_bTracking;
 	map<String, CDouTextObject*> m_TextObjectMap;
 	map<String, CDouImageObject*> m_ImageObjectMap;
 	map<String, CDouButtonObject*> m_ButtonObjectMap;
