@@ -100,29 +100,33 @@ public:
 
 		CDouImageObject *pJewel = GetImageObject(L"Jewel");
 		pJewel->SetImageFilePath(CXKnowGobal::GetImageDir() + _T("jewel.png"));
-		pJewel->SetImageRect(22, 12, 167, 32);
+		pJewel->SetControlRect(22, 12, 167, 32);
 		pJewel->SetZOrder(1);
 
 		CDouImageObject *pLogo = GetImageObject(L"Logo");
 		pLogo->SetImageFilePath(CXKnowGobal::GetImageDir() + _T("logo.png"));
-		pLogo->SetImageRect(22, 12, 167, 32);
+		pLogo->SetControlRect(22, 12, 167, 32);
 
 
 
 		CDouTextObject *pTextObj = GetTextObject(L"Title");
 		pTextObj->SetText(L"我是标题");
-		pTextObj->SetTextRect(200, 10, 50, 20);
+		pTextObj->SetControlRect(200, 10, 50, 20);
 
 		CDouButtonObject *pBtnObj = GetButtonObject(L"Reboot");
 		pBtnObj->SetImageFilePath(CXKnowGobal::GetImageDir() + _T("btn.png"), PNGTYPE::FourInOne);
-		pBtnObj->SetButtonRect(150, 200, 160, 32);
+		pBtnObj->SetControlRect(150, 200, 160, 32);
+
+		pBtnObj = GetButtonObject(L"menu");
+		pBtnObj->SetImageFilePath(CXKnowGobal::GetImageDir() + _T("menu.png"), PNGTYPE::ThreeInOne);
+		pBtnObj->SetControlRect(680 - 12 - 6 * 2 - 28 * 3, 14, 28, 28);
 		
 
 		//设置按钮
-		m_MenuBtn.SubclassWindow(GetDlgItem(IDC_MENU).m_hWnd);	//SubclassWindow只对CreateWindow时有效
-		m_MenuBtn.SetBkgndBitmap(GetBkgndHBitmap());
-		m_MenuBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("menu.png"), PNGTYPE::ThreeInOne);
-		m_MenuBtn.MoveWindow(680 - 12 - 6 * 2 - 28 * 3, 14, 28, 28);
+		//m_MenuBtn.SubclassWindow(GetDlgItem(IDC_MENU).m_hWnd);	//SubclassWindow只对CreateWindow时有效
+		//m_MenuBtn.SetBkgndBitmap(GetBkgndHBitmap());
+		//m_MenuBtn.SetImageFilePath(CXKnowGobal::GetImageDir() + _T("menu.png"), PNGTYPE::ThreeInOne);
+		//m_MenuBtn.MoveWindow(680 - 12 - 6 * 2 - 28 * 3, 14, 28, 28);
 
 		m_MinBtn.SubclassWindow(GetDlgItem(IDC_MIN).m_hWnd);	//SubclassWindow只对CreateWindow时有效
 		m_MinBtn.SetBkgndBitmap(GetBkgndHBitmap());
