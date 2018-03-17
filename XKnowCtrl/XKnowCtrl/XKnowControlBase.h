@@ -317,6 +317,7 @@ public:
 		m_TextObjectMap.clear();
 		m_ImageObjectMap.clear();
 		m_ClickedObjectMap.clear();
+		m_DouControlHover = NULL;
 		m_DouControlPress = NULL;
 	}
 	~CDouControlBase()
@@ -430,7 +431,14 @@ protected:
 		T* pThis = static_cast<T*>(this);
 		CPoint pt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		::ScreenToClient(pThis->m_hWnd, &pt);
-		SetDouControlState(pt, DouControlState::Hover);
+		if (NULL != m_DouControlHover && m_DouControlHover->GetControlRect().PtInRect(pt))
+		{
+			//鼠标hover消息
+		}
+		else
+		{
+			m_DouControlHover = SetDouControlState(pt, DouControlState::Hover);
+		}
 
 		if (!m_bTracking)
 		{
@@ -446,11 +454,17 @@ protected:
 	LRESULT OnNcMouseLeave(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
 		m_bTracking = FALSE;
+		if (NULL != m_DouControlHover)
+		{
+			//鼠标离开的消息
+			m_DouControlHover = NULL;
+		}
 		SetDouControlState(CPoint(-1, -1), DouControlState::Normal);
 		return 0;
 	}
 	LRESULT OnNcLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled)
 	{
+		m_DouControlHover = NULL;
 		bHandled = FALSE;
 		T* pThis = static_cast<T*>(this);
 		CPoint pt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
@@ -466,19 +480,16 @@ protected:
 	}
 	LRESULT OnLButtonUp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 	{
-		//m_DouControlPress = NULL;
 		ReleaseCapture();
 		T* pThis = static_cast<T*>(this);
 		CPoint pt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-		//::ScreenToClient(pThis->m_hWnd, &pt);
-		//SetDouControlState(pt, DouControlState::Normal);
-
-		CDouControlBase1* pControlBaseTmp = SetDouControlState(pt, DouControlState::Normal);
-		if (pControlBaseTmp == m_DouControlPress)	//两个一致，才发消息
+		if (NULL != m_DouControlPress && m_DouControlPress->GetControlRect().PtInRect(pt))
 		{
-			::MessageBox(NULL, NULL, NULL, 0);
+			//::MessageBox(NULL, NULL, NULL, 0);
+			//鼠标点击消息
 		}
 		m_DouControlPress = NULL;
+		SetDouControlState(pt, DouControlState::Hover);
 
 		return 0;
 	}
@@ -523,9 +534,8 @@ private:
 	map<String, CDouTextObject*> m_TextObjectMap;
 	map<String, CDouImageObject*> m_ImageObjectMap;
 	map<String, CDouControlBase1*> m_ClickedObjectMap;
+	CDouControlBase1* m_DouControlHover;	//鼠标Hover的控件
 	CDouControlBase1* m_DouControlPress;	//鼠标按下去的控件
-
-	map<String, CDouButtonObject*> m_ButtonObjectMap;
 };
 
 
