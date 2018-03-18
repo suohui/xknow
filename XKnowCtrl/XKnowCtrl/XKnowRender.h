@@ -1,5 +1,18 @@
 #pragma once
 
+
+enum TypeOrIndex { Zero = 0, One, Two, Three, OnlyOne, TwoInOne1, ThreeInOne1, FourInOne1 };/*前4个为索引，后面为图片类型*/
+struct XDouBitmapInfo
+{
+	HBITMAP hBitmap;
+	int iLeft;
+	int iTop;
+	int iWidth;
+	int iHeight;
+	BOOL bAlpha;
+	TypeOrIndex iType;
+};
+
 enum PNGTYPE
 {
 	TwoInOne,
@@ -14,6 +27,15 @@ struct XKnowImageInfo
 	int iHeight;
 	BOOL bAlpha;
 };
+
+
+
+
+
+
+
+
+
 
 typedef std::map<String, HFONT> FONTMAP;
 class CXKnowFontManager
@@ -89,6 +111,15 @@ public:
 		TCHAR szImagePath[MAX_PATH] = { 0 };
 		PathCombine(szImagePath, szExePath, _T("..\\img\\"));
 		return szImagePath;
+	}
+	static String GetImageZipPath()
+	{
+		TCHAR szExePath[MAX_PATH] = { 0 };
+		GetModuleFileName(NULL, szExePath, MAX_PATH);
+		PathRemoveFileSpec(szExePath);
+		TCHAR szImageZipPath[MAX_PATH] = { 0 };
+		PathCombine(szImageZipPath, szExePath, _T("skin.zip"));
+		return szImageZipPath;
 	}
 	static String GetTextNormalFontID()	//获取Normal字体
 	{
@@ -177,14 +208,14 @@ public:
 		}
 		else
 		{
-			HZIP hz = OpenZip((void *)L"C:\\Users\\Suo\\Desktop\\测试.zip", 0, 2);	//ZIP_FILENAME
+			HZIP hz = OpenZip((void *)CXKnowGobal::GetImageZipPath().c_str(), 0, 2);	//ZIP_FILENAME
 			if (hz == NULL)
 			{
 				return NULL;
 			}
 			ZIPENTRY ze;
 			int i;
-			FindZipItem(hz, L"测试\\FLOAT.png", true, &i, &ze);
+			FindZipItem(hz, strFileName.c_str(), true, &i, &ze);
 			dwSize = ze.unc_size;
 			if (dwSize == 0)
 			{
@@ -609,6 +640,113 @@ public:
 			}
 		} while (!strTmp.empty());
 	}
+};
+
+
+typedef std::map<String, XDouBitmapInfo*> DouBitmapMap;
+class CDouBitmapManager
+{
+public:
+	~CDouBitmapManager()
+	{
+		DeleteBitmap();
+	}
+	static CDouBitmapManager* GetInstance()
+	{
+		return m_pBitmapManager;
+	}
+	VOID DeleteBitmap()
+	{
+		DouBitmapMap::iterator iterBitmapMap;
+		for (iterBitmapMap = m_BitmapPathMap.begin(); iterBitmapMap != m_BitmapPathMap.end(); iterBitmapMap++)
+		{
+			XDouBitmapInfo* pBitmapInfo = iterBitmapMap->second;
+			delete pBitmapInfo;
+			pBitmapInfo = NULL;
+		}
+		m_BitmapPathMap.clear();
+	}
+	HBITMAP GetHBitmap(String strBitmapID)
+	{
+		if (NULL != m_BitmapIDMap[strBitmapID])
+		{
+			return m_BitmapIDMap[strBitmapID]->hBitmap;
+		}
+		return NULL;
+	}
+	CRect GetBitmapRect(String strBitmapID)
+	{
+		CRect rcBitmap;
+		if (NULL != m_BitmapIDMap[strBitmapID])
+		{
+			rcBitmap.SetRect(m_BitmapIDMap[strBitmapID]->iLeft, m_BitmapIDMap[strBitmapID]->iTop, m_BitmapIDMap[strBitmapID]->iLeft + m_BitmapIDMap[strBitmapID]->iWidth, m_BitmapIDMap[strBitmapID]->iTop + m_BitmapIDMap[strBitmapID]->iHeight);
+		}
+		return rcBitmap;
+	}
+	BOOL IsBitmapAlpha(String strBitmapID)
+	{
+		if (NULL != m_BitmapIDMap[strBitmapID])
+		{
+			return m_BitmapIDMap[strBitmapID]->bAlpha;
+		}
+		return FALSE;
+	}
+protected:
+	CDouBitmapManager()
+	{
+		enum DouBitmapAttr { Bitmap = 0, ImageList, SubItem };
+		struct DouBitmapInfo
+		{
+			String strID;
+			DouBitmapAttr bmpAttr;
+			String strPathOrOwner;
+			TypeOrIndex iTypeOrIndex;
+		} arrBmpInfo[] =
+		{
+			{ L"MainWnd.bkg", DouBitmapAttr::Bitmap, L"bkg.png", TypeOrIndex::OnlyOne }
+		};
+
+		for (size_t iIndex = 0; iIndex < sizeof(arrBmpInfo) / sizeof(arrBmpInfo[0]); iIndex++)
+		{
+			switch (arrBmpInfo[iIndex].bmpAttr)
+			{
+			case DouBitmapAttr::SubItem:
+
+
+				break;
+			case DouBitmapAttr::ImageList:
+				AddBitmapToMap(arrBmpInfo[iIndex].strID, arrBmpInfo[iIndex].strPathOrOwner, arrBmpInfo[iIndex].iTypeOrIndex);
+				break;
+			default:
+				AddBitmapToMap(arrBmpInfo[iIndex].strID, arrBmpInfo[iIndex].strPathOrOwner, arrBmpInfo[iIndex].iTypeOrIndex);
+				m_BitmapIDMap[arrBmpInfo[iIndex].strID] = m_BitmapPathMap[arrBmpInfo[iIndex].strID];
+				break;
+			}
+		}
+	}
+private:
+	void AddBitmapToMap(String strID, String strFileName, TypeOrIndex iType)
+	{
+		if (m_BitmapPathMap[strID] == NULL)
+		{
+			XKnowImageInfo* pImageInfo = CXKnowRender::LoadImageFromFile(strFileName, 1);
+
+			XDouBitmapInfo* pDouBitmapInfo = new XDouBitmapInfo();
+			pDouBitmapInfo->hBitmap = pImageInfo->hBitmap;
+			pDouBitmapInfo->iLeft = 0;
+			pDouBitmapInfo->iTop = 0;
+			pDouBitmapInfo->iWidth = pImageInfo->iWidth;
+			pDouBitmapInfo->iHeight = pImageInfo->iHeight;
+			pDouBitmapInfo->bAlpha = pImageInfo->bAlpha;
+			pDouBitmapInfo->iType = iType;
+
+			m_BitmapPathMap[strID] = pDouBitmapInfo;
+		}
+	}
+private:
+	DouBitmapMap m_BitmapPathMap;//需要释放资源
+	DouBitmapMap m_BitmapIDMap;  //不需要释放
+	static CDouBitmapManager * m_pBitmapManager;
 };
 
 

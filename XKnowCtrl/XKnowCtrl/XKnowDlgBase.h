@@ -83,8 +83,8 @@ protected:
 		//»­±³¾°
 		if (m_dwBkgndColor != 0)
 			CXKnowRender::DrawColor(dcMem, rcClient, m_dwBkgndColor);
-		if (m_pBkgndImageInfo != NULL)
-			CXKnowRender::DrawImage(dcMem, rcClient, m_pBkgndImageInfo->hBitmap, CRect(0, 0, m_pBkgndImageInfo->iWidth, m_pBkgndImageInfo->iHeight), FALSE, FALSE);
+		//if (m_pBkgndImageInfo != NULL)
+			CXKnowRender::DrawImage(dcMem, rcClient, CDouBitmapManager::GetInstance()->GetHBitmap(L"MainWnd.bkg"), CDouBitmapManager::GetInstance()->GetBitmapRect(L"MainWnd.bkg"), FALSE, FALSE);
 		//»­LOGO
 		//if (m_pIconImageInfo != NULL && !m_rcIcon.IsRectNull())
 		{
